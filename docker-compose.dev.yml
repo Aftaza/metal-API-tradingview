@@ -1,4 +1,3 @@
-# docker-compose.dev.yml (untuk development dengan hot reload)
 version: '3.8'
 
 services:
@@ -10,11 +9,23 @@ services:
     environment:
       - LOG_LEVEL=DEBUG
       - PYTHONUNBUFFERED=1
+      - UPDATE_INTERVAL=300
+      - SCRAP_TIMEOUT=20
     volumes:
       - .:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - ./logs:/app/logs
+      - ./debug_responses:/app/debug_responses
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
     networks:
       - metal-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
 
 networks:
   metal-network:
