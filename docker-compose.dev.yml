@@ -1,0 +1,21 @@
+# docker-compose.dev.yml (untuk development dengan hot reload)
+version: '3.8'
+
+services:
+  metal-api-dev:
+    build: .
+    container_name: metal-price-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_LEVEL=DEBUG
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - metal-network
+
+networks:
+  metal-network:
+    driver: bridge
