@@ -1,0 +1,2 @@
+172.18.0.1 - - [14/Oct/2025:09:39:57 +0000] "GET /prices HTTP/1.1" 200 677 "-" "PostmanRuntime/7.48.0"
+172.18.0.1 - - [14/Oct/2025:09:41:57 +0000] "GET /debug/cache HTTP/1.1" 200 430 "-" "PostmanRuntime/7.48.0"

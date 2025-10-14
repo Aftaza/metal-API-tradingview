@@ -1,9 +1,9 @@
 """
-Metal Price Real-time API System - Multi-Tab Selenium dengan Thread Pool
+Metal Price Real-time API System - Multi-Tab Selenium dengan Tab Crash Recovery
 - Single browser instance dengan 5 tab untuk scraping paralel
 - Update saat ada request, bukan scheduler
-- Inisialisasi 5 tab di startup
-- Ekstraksi data harga dengan thread pool
+- Auto-recovery jika tab crash
+- Optimized memory usage dengan headless mode
 """
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import atexit
 from bs4 import BeautifulSoup
 import threading
-from queue import Queue
+import time
 
 # Selenium imports
 from selenium import webdriver
@@ -26,7 +26,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import (
+    TimeoutException, NoSuchElementException, WebDriverException, 
+    StaleElementReferenceException
+)
 
 # Configuration
 logger = logging.getLogger(__name__)
@@ -53,7 +56,8 @@ price_cache: Dict = {
     "palladium": None,
     "copper": None,
     "last_update": None,
-    "html_cache": {}
+    "html_cache": {},
+    "tab_status": {}
 }
 
 # Thread pool untuk ekstraksi data harga paralel
@@ -92,12 +96,69 @@ TRADINGVIEW_SYMBOLS = {
 }
 
 class MultiTabBrowserScraper:
-    """Multi-tab browser scraper - reuse single browser instance"""
+    """Multi-tab browser scraper dengan auto-recovery"""
     
     def __init__(self):
         self.driver = None
         self.tabs = {}  # metal -> tab handle mapping
         self.lock = threading.RLock()
+        self.profile_dir = None
+    
+    def _create_chrome_options(self):
+        """Create optimized Chrome options untuk memory efficiency"""
+        chrome_options = Options()
+        
+        # Headless mode - mengurangi memory usage
+        chrome_options.add_argument("--headless=new")
+        
+        # Memory optimization
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-plugins-discovery")
+        chrome_options.add_argument("--disable-plugins")
+        
+        # Reduce resource consumption
+        chrome_options.add_argument("--disable-images")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-sync")
+        chrome_options.add_argument("--no-default-browser-check")
+        chrome_options.add_argument("--no-first-run")
+        chrome_options.add_argument("--disable-default-apps")
+        chrome_options.add_argument("--disable-preconnect")
+        chrome_options.add_argument("--disable-component-extensions-with-background-pages")
+        chrome_options.add_argument("--disable-component-update")
+        
+        # Stability improvements
+        chrome_options.add_argument("--disable-ipc-flooding-protection")
+        chrome_options.add_argument("--disable-background-timer-throttling")
+        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
+        chrome_options.add_argument("--disable-renderer-backgrounding")
+        chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+        chrome_options.add_argument("--disable-breakpad")
+        
+        # Memory limits
+        chrome_options.add_argument("--memory-pressure-off")
+        chrome_options.add_argument("--enable-automation")
+        
+        # Display settings
+        chrome_options.add_argument("--window-size=1280,720")
+        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+        
+        # Profile directory
+        import tempfile, uuid
+        self.profile_dir = f"/tmp/chrome-profile-{uuid.uuid4()}"
+        chrome_options.add_argument(f"--user-data-dir={self.profile_dir}")
+        
+        # Disable unneeded features
+        prefs = {
+            "profile.default_content_setting_values.notifications": 2,
+            "profile.managed_default_content_settings.popups": 2,
+        }
+        chrome_options.add_experimental_option("prefs", prefs)
+        
+        return chrome_options
     
     def initialize(self):
         """Initialize browser dengan 5 tab"""
@@ -106,59 +167,51 @@ class MultiTabBrowserScraper:
         logger.info("=" * 60)
         
         try:
-            chrome_options = Options()
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--no-sandbox")
-            chrome_options.add_argument("--disable-dev-shm-usage")
-            chrome_options.add_argument("--disable-gpu")
-            chrome_options.add_argument("--window-size=1920,1080")
-            chrome_options.add_argument("--disable-extensions")
-            chrome_options.add_argument("--disable-plugins-discovery")
-            chrome_options.add_argument("--disable-plugins")
-            chrome_options.add_argument("--disable-images")
-            chrome_options.add_argument("--no-first-run")
-            chrome_options.add_argument("--no-default-browser-check")
-            chrome_options.add_argument("--disable-default-apps")
-            chrome_options.add_argument("--disable-features=VizDisplayCompositor")
-            chrome_options.add_argument("--no-zygote")
-            chrome_options.add_argument("--disable-setuid-sandbox")
-            chrome_options.add_argument("--disable-ipc-flooding-protection")
-            chrome_options.add_argument("--disable-background-timer-throttling")
-            chrome_options.add_argument("--disable-backgrounding-occluded-windows")
-            chrome_options.add_argument("--disable-renderer-backgrounding")
-            chrome_options.add_argument("--memory-pressure-off")
-            chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-            
-            # Set profile directory
-            import tempfile, uuid
-            self.profile_dir = f"/tmp/chrome-profile-{uuid.uuid4()}"
-            chrome_options.add_argument(f"--user-data-dir={self.profile_dir}")
-            
+            chrome_options = self._create_chrome_options()
             self.driver = webdriver.Chrome(options=chrome_options)
             logger.info("✓ Browser initialized")
+            
+            # Set implicit wait untuk keseluruhan driver
+            self.driver.set_page_load_timeout(30)
+            self.driver.implicitly_wait(5)
             
             # Buat 5 tab dan load URLs
             metals = list(TRADINGVIEW_SYMBOLS.keys())
             
             for idx, metal in enumerate(metals):
-                if idx == 0:
-                    # Tab pertama (sudah terbuka)
-                    self.tabs[metal] = self.driver.current_window_handle
-                    logger.info(f"Using existing tab for {metal.upper()}")
-                else:
-                    # Buat tab baru
-                    self.driver.execute_script("window.open('');")
-                    self.driver.switch_to.window(self.driver.window_handles[-1])
-                    self.tabs[metal] = self.driver.current_window_handle
-                    logger.info(f"Created new tab {idx} for {metal.upper()}")
-                
-                # Load URL
-                metal_data = TRADINGVIEW_SYMBOLS[metal]
-                self.driver.get(metal_data['url'])
-                logger.info(f"✓ Loaded {metal.upper()} tab: {metal_data['url']}")
+                try:
+                    if idx == 0:
+                        # Tab pertama (sudah terbuka)
+                        self.tabs[metal] = self.driver.current_window_handle
+                        logger.info(f"Using existing tab for {metal.upper()}")
+                    else:
+                        # Buat tab baru
+                        self.driver.execute_script("window.open('');")
+                        self.driver.switch_to.window(self.driver.window_handles[-1])
+                        self.tabs[metal] = self.driver.current_window_handle
+                        logger.info(f"Created new tab {idx} for {metal.upper()}")
+                    
+                    # Load URL dengan error handling
+                    metal_data = TRADINGVIEW_SYMBOLS[metal]
+                    try:
+                        self.driver.get(metal_data['url'])
+                        with cache_lock:
+                            price_cache["tab_status"][metal] = "active"
+                        logger.info(f"✓ Loaded {metal.upper()}: {metal_data['url']}")
+                    except Exception as e:
+                        logger.error(f"Error loading {metal.upper()}: {e}")
+                        with cache_lock:
+                            price_cache["tab_status"][metal] = "error"
+                    
+                    time.sleep(0.5)
+                    
+                except Exception as e:
+                    logger.error(f"Error creating/loading tab for {metal}: {e}")
+                    with cache_lock:
+                        price_cache["tab_status"][metal] = "error"
             
             logger.info("=" * 60)
-            logger.info(f"✓ All 5 tabs initialized successfully")
+            logger.info(f"✓ Browser initialization complete")
             logger.info("=" * 60)
             
             return True
@@ -169,8 +222,65 @@ class MultiTabBrowserScraper:
             logger.error(traceback.format_exc())
             return False
     
+    def _check_tab_health(self, metal: str) -> bool:
+        """Check apakah tab masih sehat"""
+        try:
+            if metal not in self.tabs:
+                return False
+            
+            self.driver.switch_to.window(self.tabs[metal])
+            # Cek apakah driver masih bisa execute script
+            self.driver.execute_script("return true;")
+            return True
+            
+        except (WebDriverException, Exception) as e:
+            logger.warning(f"Tab health check failed for {metal}: {str(e)[:50]}")
+            return False
+    
+    def _recover_tab(self, metal: str) -> bool:
+        """Recover crashed tab dengan reinisialisasi"""
+        logger.warning(f"Attempting to recover tab for {metal}...")
+        
+        try:
+            with self.lock:
+                # Close tab yang rusak
+                if metal in self.tabs:
+                    try:
+                        self.driver.switch_to.window(self.tabs[metal])
+                        self.driver.close()
+                        logger.info(f"Closed crashed tab for {metal}")
+                    except:
+                        pass
+                
+                # Buat tab baru
+                self.driver.execute_script("window.open('');")
+                self.driver.switch_to.window(self.driver.window_handles[-1])
+                self.tabs[metal] = self.driver.current_window_handle
+                logger.info(f"Created new tab for {metal}")
+                
+                # Load URL
+                metal_data = TRADINGVIEW_SYMBOLS[metal]
+                self.driver.get(metal_data['url'])
+                
+                # Wait untuk page render
+                wait = WebDriverWait(self.driver, 15)
+                wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
+                )
+                
+                with cache_lock:
+                    price_cache["tab_status"][metal] = "recovered"
+                logger.info(f"✓ Tab recovered successfully for {metal}")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Tab recovery failed for {metal}: {e}")
+            with cache_lock:
+                price_cache["tab_status"][metal] = "error"
+            return False
+    
     def load_and_save_html(self, metal: str, refresh: bool = False) -> bool:
-        """Load tab, tunggu render, dan simpan HTML
+        """Load tab, tunggu render, dan simpan HTML dengan auto-recovery
         
         Args:
             metal: Metal symbol
@@ -178,6 +288,13 @@ class MultiTabBrowserScraper:
         """
         try:
             with self.lock:
+                # Check tab health
+                if not self._check_tab_health(metal):
+                    logger.warning(f"Tab for {metal} is unhealthy, attempting recovery...")
+                    if not self._recover_tab(metal):
+                        logger.error(f"Failed to recover tab for {metal}")
+                        return False
+                
                 if metal not in self.tabs:
                     logger.error(f"Tab untuk {metal} tidak ditemukan")
                     return False
@@ -188,57 +305,62 @@ class MultiTabBrowserScraper:
                 
                 # Refresh halaman jika diperlukan
                 if refresh:
-                    self.driver.refresh()
-                    logger.debug(f"Refreshed {metal} tab")
-                    
-                    # Wait untuk element muncul dan render setelah refresh
                     try:
-                        wait = WebDriverWait(self.driver, 12)
-                        
-                        # Wait element muncul
-                        symbol_element = wait.until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
-                        )
-                        logger.debug(f"Element found for {metal}")
-                        
-                        # Wait sampai ada text
-                        wait.until(
-                            lambda d: len(d.find_element(By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']").text.strip()) > 0
-                        )
-                        logger.debug(f"Price rendered for {metal}")
-                        
-                    except TimeoutException:
-                        logger.error(f"Timeout loading price for {metal}")
-                        return False
-                else:
-                    # Tanpa refresh, hanya tunggu element ada dan punya text
-                    # Karena TradingView auto-update, nilai sudah ter-update di halaman
-                    try:
-                        wait = WebDriverWait(self.driver, 8)
-                        
-                        # Check element ada dan punya text
-                        symbol_element = wait.until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
-                        )
-                        
-                        # Ensure ada text (biasanya instant karena sudah render sebelumnya)
-                        wait.until(
-                            lambda d: len(d.find_element(By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']").text.strip()) > 0
-                        )
-                        logger.debug(f"HTML ready for {metal} (no refresh needed)")
-                        
-                    except TimeoutException:
-                        logger.warning(f"Element timeout for {metal}, falling back to current page")
+                        self.driver.refresh()
+                        logger.debug(f"Refreshed {metal} tab")
+                    except WebDriverException as e:
+                        logger.error(f"Refresh failed for {metal}, attempting recovery: {e}")
+                        return self._recover_tab(metal) and self.load_and_save_html(metal, refresh)
                 
-                # Simpan HTML
-                html = self.driver.page_source
-                with cache_lock:
-                    price_cache["html_cache"][metal] = html
-                logger.info(f"✓ HTML extracted for {metal.upper()}")
-                return True
+                # Wait untuk element muncul dan render
+                try:
+                    wait = WebDriverWait(self.driver, 10)
                     
+                    # Wait element visible
+                    symbol_element = wait.until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']")),
+                        message=f"Element not found for {metal}"
+                    )
+                    
+                    # Ensure ada text
+                    wait.until(
+                        lambda d: len(d.find_element(By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']").text.strip()) > 0,
+                        message=f"No price text for {metal}"
+                    )
+                    
+                    logger.debug(f"HTML ready for {metal}")
+                    
+                except TimeoutException as e:
+                    logger.error(f"Timeout for {metal}: {e}")
+                    return False
+                except StaleElementReferenceException as e:
+                    logger.error(f"Stale element for {metal}, retrying...")
+                    return self.load_and_save_html(metal, refresh)
+                
+                # Simpan HTML dengan safety check
+                try:
+                    html = self.driver.page_source
+                    if html and len(html) > 1000:  # Minimal valid HTML
+                        with cache_lock:
+                            price_cache["html_cache"][metal] = html
+                            price_cache["tab_status"][metal] = "active"
+                        logger.info(f"✓ HTML extracted for {metal.upper()} ({len(html)} bytes)")
+                        return True
+                    else:
+                        logger.warning(f"Invalid HTML size for {metal}: {len(html) if html else 0}")
+                        return False
+                        
+                except Exception as e:
+                    logger.error(f"Error saving HTML for {metal}: {e}")
+                    return False
+                    
+        except WebDriverException as e:
+            logger.error(f"WebDriver error for {metal}: {e}")
+            with cache_lock:
+                price_cache["tab_status"][metal] = "error"
+            return False
         except Exception as e:
-            logger.error(f"Error loading HTML for {metal}: {e}")
+            logger.error(f"Unexpected error loading HTML for {metal}: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return False
@@ -254,10 +376,14 @@ class MultiTabBrowserScraper:
         
         results = {}
         for metal in TRADINGVIEW_SYMBOLS.keys():
-            success = self.load_and_save_html(metal, refresh=refresh)
-            results[metal] = success
-            # Minimal delay antar tab
-            import time
+            try:
+                success = self.load_and_save_html(metal, refresh=refresh)
+                results[metal] = success
+            except Exception as e:
+                logger.error(f"Error processing {metal}: {e}")
+                results[metal] = False
+            
+            # Delay antar tab
             time.sleep(0.3)
         
         return results
@@ -321,8 +447,6 @@ def extract_price_from_html(metal: str) -> Optional[float]:
         
     except Exception as e:
         logger.error(f"Error extracting price for {metal}: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
         return None
 
 def extract_all_prices_parallel() -> Dict[str, float]:
@@ -364,7 +488,7 @@ async def refresh_prices_on_request():
     logger.info("Extracting prices (no refresh - TradingView auto-updates)...")
     logger.info("=" * 60)
     
-    # Hanya extract HTML dari tab yang sudah running, tanpa refresh
+    # Hanya extract HTML dari tab yang sudah running
     refresh_results = browser_scraper.refresh_all_tabs(refresh=False)
     
     success_count = sum(1 for s in refresh_results.values() if s)
@@ -378,7 +502,7 @@ async def refresh_prices_on_request():
         price_cache["last_update"] = datetime.utcnow().isoformat()
     
     logger.info("=" * 60)
-    logger.info(f"Extraction complete. Got {len(prices_found)} prices: {', '.join([m.upper() for m in prices_found.keys()])}")
+    logger.info(f"Extraction complete. Got {len(prices_found)} prices")
     logger.info(f"Last update: {price_cache['last_update']}")
     logger.info("=" * 60)
     
@@ -395,7 +519,7 @@ async def manual_refresh_prices():
     logger.info("Manual refresh - refreshing all tabs...")
     logger.info("=" * 60)
     
-    # Refresh semua tab
+    # Refresh semua tab dengan auto-recovery
     refresh_results = browser_scraper.refresh_all_tabs(refresh=True)
     
     success_count = sum(1 for s in refresh_results.values() if s)
@@ -442,8 +566,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Metal Price API - Multi-Tab TradingView",
-    description="Real-time API dengan multi-tab browser (Gold, Silver, Platinum, Palladium, Copper)",
-    version="2.0.0",
+    description="Real-time API dengan multi-tab browser dan auto-recovery (Gold, Silver, Platinum, Palladium, Copper)",
+    version="2.1.0",
     lifespan=lifespan
 )
 
@@ -461,13 +585,15 @@ async def root():
     """Root endpoint"""
     return {
         "name": "Metal Price API - Multi-Tab TradingView",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "source": "TradingView Multi-Tab Scraping (Selenium)",
         "features": [
-            "Single browser instance dengan 5 tab",
+            "Single browser instance dengan 5 tab (headless)",
             "Refresh saat ada request",
             "Parallel price extraction dengan thread pool",
-            "Optimized untuk performance"
+            "Auto-recovery untuk crashed tabs",
+            "Optimized untuk memory efficiency",
+            "Dinamis JavaScript rendering"
         ],
         "endpoints": {
             "GET /": "This endpoint",
@@ -475,7 +601,8 @@ async def root():
             "GET /prices/{metal}": "Get specific metal price",
             "GET /health": "Health check",
             "GET /symbols": "Get list of symbols",
-            "POST /refresh": "Manual price refresh"
+            "POST /refresh": "Manual price refresh with tab recovery",
+            "GET /debug/cache": "Debug cache status and tab health"
         }
     }
 
@@ -483,13 +610,18 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     with cache_lock:
-        cached_count = len([p for p in price_cache if p != "last_update" and p != "html_cache" and price_cache[p] is not None])
+        cached_count = len([p for p in price_cache if p != "last_update" and p != "html_cache" and p != "tab_status" and price_cache[p] is not None])
+        tab_status = price_cache.get("tab_status", {})
+    
+    active_tabs = sum(1 for s in tab_status.values() if s == "active")
     
     return {
         "status": "healthy" if cached_count > 0 else "initializing",
         "last_update": price_cache.get("last_update"),
         "cached_metals": cached_count,
         "total_metals": len(TRADINGVIEW_SYMBOLS),
+        "active_tabs": active_tabs,
+        "total_tabs": len(TRADINGVIEW_SYMBOLS),
         "symbols": list(TRADINGVIEW_SYMBOLS.keys()),
         "browser_active": browser_scraper is not None
     }
@@ -498,8 +630,9 @@ async def health_check():
 async def metrics():
     """Metrics endpoint"""
     with cache_lock:
-        cached_count = len([p for p in price_cache if p != "last_update" and p != "html_cache" and price_cache[p] is not None])
+        cached_count = len([p for p in price_cache if p != "last_update" and p != "html_cache" and p != "tab_status" and price_cache[p] is not None])
         last_update = price_cache.get("last_update")
+        tab_status = price_cache.get("tab_status", {})
     
     cache_age = None
     if last_update:
@@ -517,7 +650,8 @@ async def metrics():
         "cache_age_seconds": cache_age,
         "last_scrape_attempt": last_update,
         "browser_active": browser_scraper is not None,
-        "thread_pool_workers": 5
+        "thread_pool_workers": 5,
+        "tab_status": tab_status
     }
 
 @app.get("/prices", response_model=MetalPriceResponse, tags=["Prices"])
@@ -583,13 +717,17 @@ async def get_metal_price(metal: str):
 
 @app.post("/refresh", tags=["Admin"])
 async def manual_refresh():
-    """Manual refresh prices - refresh semua tab"""
+    """Manual refresh prices dengan auto-recovery jika tab crash"""
     success = await manual_refresh_prices()
+    
+    with cache_lock:
+        tab_status = price_cache.get("tab_status", {})
     
     return {
         "status": "success" if success else "partial",
-        "message": "Manual refresh: tabs refreshed and prices extracted",
+        "message": "Manual refresh: tabs refreshed with auto-recovery and prices extracted",
         "last_update": price_cache.get("last_update"),
+        "tab_status": tab_status,
         "duration": "~12-15 seconds"
     }
 
@@ -602,22 +740,32 @@ async def get_symbols():
             for metal, data in TRADINGVIEW_SYMBOLS.items()
         },
         "description": "Metal symbols dari TradingView",
-        "scraping_method": "Multi-Tab Selenium + Thread Pool Extraction"
+        "scraping_method": "Multi-Tab Selenium (Headless) + Thread Pool Extraction + Auto-Recovery"
     }
 
 @app.get("/debug/cache", tags=["Debug"])
 async def debug_cache():
-    """Debug cache status"""
+    """Debug cache status dan tab health"""
     with cache_lock:
-        return {
-            "last_update": price_cache.get("last_update"),
-            "cached_metals": {
-                metal: price_cache.get(metal, {}).get("price") 
-                for metal in TRADINGVIEW_SYMBOLS.keys()
-            },
-            "html_cached_count": len(price_cache.get("html_cache", {})),
-            "browser_active": browser_scraper is not None
+        cached_metals = {
+            metal: price_cache.get(metal, {}).get("price") 
+            for metal in TRADINGVIEW_SYMBOLS.keys()
         }
+        html_size = {
+            metal: len(price_cache.get("html_cache", {}).get(metal, ""))
+            for metal in TRADINGVIEW_SYMBOLS.keys()
+        }
+        tab_status = price_cache.get("tab_status", {})
+    
+    return {
+        "last_update": price_cache.get("last_update"),
+        "cached_metals": cached_metals,
+        "html_cache_size_bytes": html_size,
+        "tab_status": tab_status,
+        "browser_active": browser_scraper is not None,
+        "total_cached_metals": len([p for p in cached_metals.values() if p]),
+        "active_tabs": sum(1 for s in tab_status.values() if s == "active")
+    }
 
 if __name__ == "__main__":
     import uvicorn
