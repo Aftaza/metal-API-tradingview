@@ -1,15 +1,15 @@
 """
-Metal Price Real-time API System dengan Dynamic Currency Conversion
-- Multi-tab Selenium untuk metal prices
-- Dynamic USDIDR tab (on-demand, auto-close)
-- Konversi otomatis USD ke IDR
+Metal Price Real-time API System dengan 6 Persistent Tabs
+- 5 tab untuk metal prices (Gold, Silver, Platinum, Palladium, Copper)
+- 1 tab untuk USDIDR exchange rate (persistent)
+- Auto-recovery untuk crashed tabs
+- Parallel extraction dengan thread pool
 """
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
-import asyncio
 from typing import Optional, Dict, List
 import logging
 from concurrent.futures import ThreadPoolExecutor
@@ -43,12 +43,18 @@ TRADINGVIEW_SYMBOLS = {
     "copper": {"symbol": "XCUUSD", "url": "https://www.tradingview.com/symbols/XCUUSD/", "name": "Copper"}
 }
 
-USDIDR_URL = "https://www.tradingview.com/symbols/USDIDR/"
+USDIDR_CONFIG = {
+    "symbol": "USDIDR",
+    "url": "https://www.tradingview.com/symbols/USDIDR/",
+    "name": "USD to IDR"
+}
 
 # Data models
 class MetalPrice(BaseModel):
     metal: str
     price_usd: float
+    price_per_gram_usd: float
+    price_per_gram_idr: Optional[float] = None
     currency: str = "USD"
     timestamp: str
     source: str = "TradingView"
@@ -56,6 +62,7 @@ class MetalPrice(BaseModel):
 class MetalPriceResponse(BaseModel):
     status: str
     data: List[MetalPrice]
+    exchange_rate_usdidr: Optional[float] = None
     last_updated: str
 
 class MetalPriceWithGram(BaseModel):
@@ -79,23 +86,21 @@ price_cache: Dict = {
     "platinum": None,
     "palladium": None,
     "copper": None,
+    "usdidr": None,
     "last_update": None,
     "html_cache": {},
-    "tab_status": {},
-    "usdidr_rate": None,
-    "usdidr_last_update": None
+    "tab_status": {}
 }
 
-thread_pool = ThreadPoolExecutor(max_workers=5)
+thread_pool = ThreadPoolExecutor(max_workers=6)  # 5 metals + 1 USDIDR
 cache_lock = threading.RLock()
 
 class MultiTabBrowserScraper:
-    """Multi-tab browser scraper dengan dynamic USDIDR tab"""
+    """Multi-tab browser scraper dengan 6 persistent tabs"""
     
     def __init__(self):
         self.driver = None
-        self.tabs = {}  # metal -> tab handle mapping
-        self.usdidr_tab = None  # Tab khusus untuk USDIDR
+        self.tabs = {}  # metal/usdidr -> tab handle mapping
         self.lock = threading.RLock()
         self.profile_dir = None
     
@@ -124,9 +129,9 @@ class MultiTabBrowserScraper:
         return chrome_options
     
     def initialize(self):
-        """Initialize browser dengan 5 tab untuk metals"""
+        """Initialize browser dengan 6 persistent tabs (5 metals + 1 USDIDR)"""
         logger.info("=" * 60)
-        logger.info("Initializing Multi-Tab Browser Scraper...")
+        logger.info("Initializing Browser with 6 Persistent Tabs...")
         logger.info("=" * 60)
         
         try:
@@ -137,327 +142,246 @@ class MultiTabBrowserScraper:
             self.driver.set_page_load_timeout(30)
             self.driver.implicitly_wait(5)
             
-            metals = list(TRADINGVIEW_SYMBOLS.keys())
+            # List semua tab yang akan dibuat: 5 metals + 1 USDIDR
+            all_tabs_config = []
             
-            for idx, metal in enumerate(metals):
+            # Tambahkan metals
+            for metal, config in TRADINGVIEW_SYMBOLS.items():
+                all_tabs_config.append({
+                    "key": metal,
+                    "url": config['url'],
+                    "name": config['name']
+                })
+            
+            # Tambahkan USDIDR
+            all_tabs_config.append({
+                "key": "usdidr",
+                "url": USDIDR_CONFIG['url'],
+                "name": USDIDR_CONFIG['name']
+            })
+            
+            # Buat semua tab
+            for idx, tab_config in enumerate(all_tabs_config):
                 try:
+                    key = tab_config['key']
+                    url = tab_config['url']
+                    name = tab_config['name']
+                    
                     if idx == 0:
-                        self.tabs[metal] = self.driver.current_window_handle
-                        logger.info(f"Using existing tab for {metal.upper()}")
+                        # Tab pertama (sudah terbuka)
+                        self.tabs[key] = self.driver.current_window_handle
+                        logger.info(f"Tab {idx+1}/6: Using existing tab for {name.upper()}")
                     else:
+                        # Buat tab baru
                         self.driver.execute_script("window.open('');")
                         self.driver.switch_to.window(self.driver.window_handles[-1])
-                        self.tabs[metal] = self.driver.current_window_handle
-                        logger.info(f"Created new tab {idx} for {metal.upper()}")
+                        self.tabs[key] = self.driver.current_window_handle
+                        logger.info(f"Tab {idx+1}/6: Created new tab for {name.upper()}")
                     
-                    metal_data = TRADINGVIEW_SYMBOLS[metal]
+                    # Load URL
                     try:
-                        self.driver.get(metal_data['url'])
+                        logger.info(f"Loading {name}...")
+                        self.driver.get(url)
+                        
+                        # Wait untuk page load
+                        wait = WebDriverWait(self.driver, 20)
+                        wait.until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
+                        )
+                        
+                        # Extra wait untuk rendering
+                        time.sleep(1.5)
+                        
                         with cache_lock:
-                            price_cache["tab_status"][metal] = "active"
-                        logger.info(f"✓ Loaded {metal.upper()}: {metal_data['url']}")
+                            price_cache["tab_status"][key] = "active"
+                        
+                        logger.info(f"✓ Loaded {name.upper()}: {url}")
+                        
                     except Exception as e:
-                        logger.error(f"Error loading {metal.upper()}: {e}")
+                        logger.error(f"Error loading {name.upper()}: {e}")
                         with cache_lock:
-                            price_cache["tab_status"][metal] = "error"
+                            price_cache["tab_status"][key] = "error"
                     
                     time.sleep(0.5)
                     
                 except Exception as e:
-                    logger.error(f"Error creating/loading tab for {metal}: {e}")
+                    logger.error(f"Error creating/loading tab for {name}: {e}")
                     with cache_lock:
-                        price_cache["tab_status"][metal] = "error"
+                        price_cache["tab_status"][key] = "error"
             
             logger.info("=" * 60)
-            logger.info(f"✓ Browser initialization complete")
+            logger.info(f"✓ Browser initialization complete - 6 tabs active")
+            logger.info(f"  Metals: {list(TRADINGVIEW_SYMBOLS.keys())}")
+            logger.info(f"  Currency: USDIDR")
             logger.info("=" * 60)
             
             return True
             
         except Exception as e:
-            logger.error(f"Error initializing multi-tab browser: {e}")
+            logger.error(f"Error initializing browser: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return False
     
-    def open_usdidr_tab(self) -> bool:
-        """Buka tab USDIDR secara dinamis"""
-        logger.info("=" * 60)
-        logger.info("Opening USDIDR tab dynamically...")
-        logger.info("=" * 60)
-        
-        try:
-            with self.lock:
-                # Cek apakah tab sudah ada
-                if self.usdidr_tab:
-                    try:
-                        self.driver.switch_to.window(self.usdidr_tab)
-                        self.driver.execute_script("return true;")
-                        logger.info("✓ USDIDR tab already exists and active")
-                        return True
-                    except:
-                        logger.info("USDIDR tab exists but not responsive, recreating...")
-                        self.usdidr_tab = None
-                
-                # Buat tab baru
-                self.driver.execute_script("window.open('');")
-                all_handles = self.driver.window_handles
-                self.usdidr_tab = all_handles[-1]
-                self.driver.switch_to.window(self.usdidr_tab)
-                logger.info(f"✓ Created new USDIDR tab (total tabs: {len(all_handles)})")
-                
-                # Load URL
-                logger.info(f"Loading USDIDR URL: {USDIDR_URL}")
-                self.driver.get(USDIDR_URL)
-                
-                # Wait untuk element muncul dengan timeout lebih lama
-                logger.info("Waiting for USDIDR page to load completely...")
-                wait = WebDriverWait(self.driver, 20)
-                
-                # Wait untuk price element
-                price_element = wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']")),
-                    message="USDIDR price element not found"
-                )
-                logger.info("✓ USDIDR price element found")
-                
-                # Wait untuk text muncul
-                wait.until(
-                    lambda d: len(d.find_element(By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']").text.strip()) > 0,
-                    message="USDIDR price text not loaded"
-                )
-                
-                # Extra wait untuk memastikan JavaScript selesai render
-                time.sleep(2)
-                
-                logger.info("✓ USDIDR page loaded completely")
-                logger.info("=" * 60)
-                
-                return True
-                
-        except TimeoutException as e:
-            logger.error(f"Timeout loading USDIDR tab: {e}")
-            self.usdidr_tab = None
-            return False
-        except Exception as e:
-            logger.error(f"Error opening USDIDR tab: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            self.usdidr_tab = None
-            return False
-    
-    def close_usdidr_tab(self):
-        """Tutup tab USDIDR untuk optimasi memory"""
-        logger.info("Closing USDIDR tab...")
-        
-        try:
-            with self.lock:
-                if self.usdidr_tab:
-                    try:
-                        self.driver.switch_to.window(self.usdidr_tab)
-                        self.driver.close()
-                        self.usdidr_tab = None
-                        logger.info("✓ USDIDR tab closed successfully")
-                        
-                        # Switch ke tab pertama (metal tab)
-                        if self.tabs:
-                            first_metal = list(self.tabs.keys())[0]
-                            self.driver.switch_to.window(self.tabs[first_metal])
-                            logger.info(f"Switched back to {first_metal} tab")
-                    except Exception as e:
-                        logger.warning(f"Error closing USDIDR tab: {e}")
-                        self.usdidr_tab = None
-                else:
-                    logger.info("USDIDR tab already closed or not exists")
-        except Exception as e:
-            logger.error(f"Unexpected error closing USDIDR tab: {e}")
-    
-    def scrape_usdidr_rate(self) -> Optional[float]:
-        """Scrape exchange rate USDIDR dari tab yang sudah dibuka"""
-        logger.info("Scraping USDIDR exchange rate...")
-        
-        try:
-            with self.lock:
-                if not self.usdidr_tab:
-                    logger.error("USDIDR tab not opened")
-                    return None
-                
-                # Switch ke USDIDR tab
-                self.driver.switch_to.window(self.usdidr_tab)
-                
-                # Refresh untuk data terbaru
-                logger.info("Refreshing USDIDR page...")
-                self.driver.refresh()
-                
-                # Wait untuk reload
-                wait = WebDriverWait(self.driver, 15)
-                wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
-                )
-                
-                # Extra wait untuk JavaScript rendering
-                time.sleep(1.5)
-                
-                # Get page source
-                html = self.driver.page_source
-                logger.info(f"USDIDR HTML extracted ({len(html)} bytes)")
-                
-                # Parse dengan BeautifulSoup
-                soup = BeautifulSoup(html, 'lxml')
-                symbol_last_value = soup.find('span', attrs={'data-qa-id': 'symbol-last-value'})
-                
-                if symbol_last_value:
-                    text_content = symbol_last_value.get_text(strip=True)
-                    logger.info(f"Raw USDIDR text: {text_content}")
-                    
-                    # Parse rate (format: 15,750.50 atau 15750.50)
-                    rate_str = text_content.replace(',', '')
-                    
-                    try:
-                        rate = float(rate_str)
-                        
-                        # Validasi range (USDIDR biasanya 14000-17000)
-                        if 10000 < rate < 20000:
-                            logger.info(f"✓ USDIDR Rate: {rate:,.2f}")
-                            
-                            # Simpan ke cache
-                            with cache_lock:
-                                price_cache["usdidr_rate"] = rate
-                                price_cache["usdidr_last_update"] = datetime.utcnow().isoformat()
-                            
-                            return rate
-                        else:
-                            logger.warning(f"USDIDR rate {rate} outside valid range")
-                    except ValueError as e:
-                        logger.error(f"Could not parse USDIDR rate {rate_str}: {e}")
-                else:
-                    logger.warning("Could not find USDIDR price element")
-                
-                return None
-                
-        except TimeoutException as e:
-            logger.error(f"Timeout scraping USDIDR: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Error scraping USDIDR: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            return None
-    
-    def get_usdidr_rate_with_auto_tab(self) -> Optional[float]:
-        """Get USDIDR rate dengan auto open/close tab"""
-        logger.info("=" * 60)
-        logger.info("Getting USDIDR rate (auto tab management)...")
-        logger.info("=" * 60)
-        
-        try:
-            # Buka tab
-            if not self.open_usdidr_tab():
-                logger.error("Failed to open USDIDR tab")
-                return None
-            
-            # Scrape rate
-            rate = self.scrape_usdidr_rate()
-            
-            # Tutup tab (cleanup)
-            self.close_usdidr_tab()
-            
-            logger.info("=" * 60)
-            if rate:
-                logger.info(f"✓ Successfully got USDIDR rate: {rate:,.2f}")
-            else:
-                logger.error("Failed to get USDIDR rate")
-            logger.info("=" * 60)
-            
-            return rate
-            
-        except Exception as e:
-            logger.error(f"Error in get_usdidr_rate_with_auto_tab: {e}")
-            # Pastikan tab ditutup meskipun error
-            try:
-                self.close_usdidr_tab()
-            except:
-                pass
-            return None
-    
-    def _check_tab_health(self, metal: str) -> bool:
+    def _check_tab_health(self, key: str) -> bool:
         """Check apakah tab masih sehat"""
         try:
-            if metal not in self.tabs:
+            if key not in self.tabs:
                 return False
-            self.driver.switch_to.window(self.tabs[metal])
+            self.driver.switch_to.window(self.tabs[key])
             self.driver.execute_script("return true;")
             return True
         except (WebDriverException, Exception):
             return False
     
-    def _recover_tab(self, metal: str) -> bool:
+    def _recover_tab(self, key: str) -> bool:
         """Recover crashed tab"""
-        logger.warning(f"Attempting to recover tab for {metal}...")
+        logger.warning(f"Attempting to recover tab for {key}...")
         
         try:
             with self.lock:
-                if metal in self.tabs:
+                # Tentukan URL berdasarkan key
+                if key == "usdidr":
+                    url = USDIDR_CONFIG['url']
+                    name = USDIDR_CONFIG['name']
+                else:
+                    url = TRADINGVIEW_SYMBOLS[key]['url']
+                    name = TRADINGVIEW_SYMBOLS[key]['name']
+                
+                # Close tab yang rusak
+                if key in self.tabs:
                     try:
-                        self.driver.switch_to.window(self.tabs[metal])
+                        self.driver.switch_to.window(self.tabs[key])
                         self.driver.close()
+                        logger.info(f"Closed crashed tab for {name}")
                     except:
                         pass
                 
+                # Buat tab baru
                 self.driver.execute_script("window.open('');")
                 self.driver.switch_to.window(self.driver.window_handles[-1])
-                self.tabs[metal] = self.driver.current_window_handle
+                self.tabs[key] = self.driver.current_window_handle
+                logger.info(f"Created new tab for {name}")
                 
-                metal_data = TRADINGVIEW_SYMBOLS[metal]
-                self.driver.get(metal_data['url'])
+                # Load URL
+                self.driver.get(url)
                 
+                # Wait untuk page render
                 wait = WebDriverWait(self.driver, 15)
                 wait.until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
                 )
                 
                 with cache_lock:
-                    price_cache["tab_status"][metal] = "recovered"
-                logger.info(f"✓ Tab recovered successfully for {metal}")
+                    price_cache["tab_status"][key] = "recovered"
+                logger.info(f"✓ Tab recovered successfully for {name}")
                 return True
                 
         except Exception as e:
-            logger.error(f"Tab recovery failed for {metal}: {e}")
+            logger.error(f"Tab recovery failed for {key}: {e}")
+            with cache_lock:
+                price_cache["tab_status"][key] = "error"
             return False
     
-    def load_and_save_html(self, metal: str, refresh: bool = False) -> bool:
-        """Load tab dan simpan HTML"""
+    def load_and_save_html(self, key: str, refresh: bool = False) -> bool:
+        """Load tab dan simpan HTML dengan auto-recovery
+        
+        Args:
+            key: Tab key (metal name atau 'usdidr')
+            refresh: Jika True, refresh halaman dulu
+        """
         try:
             with self.lock:
-                if not self._check_tab_health(metal):
-                    if not self._recover_tab(metal):
+                # Check tab health
+                if not self._check_tab_health(key):
+                    logger.warning(f"Tab for {key} is unhealthy, attempting recovery...")
+                    if not self._recover_tab(key):
+                        logger.error(f"Failed to recover tab for {key}")
                         return False
                 
-                self.driver.switch_to.window(self.tabs[metal])
+                if key not in self.tabs:
+                    logger.error(f"Tab untuk {key} tidak ditemukan")
+                    return False
                 
+                # Switch ke tab
+                self.driver.switch_to.window(self.tabs[key])
+                logger.debug(f"Switched to {key} tab")
+                
+                # Refresh halaman jika diperlukan
                 if refresh:
-                    self.driver.refresh()
+                    try:
+                        self.driver.refresh()
+                        logger.debug(f"Refreshed {key} tab")
+                    except WebDriverException as e:
+                        logger.error(f"Refresh failed for {key}: {e}")
+                        return self._recover_tab(key) and self.load_and_save_html(key, refresh)
                 
-                wait = WebDriverWait(self.driver, 10)
-                wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
-                )
-                
-                html = self.driver.page_source
-                if html and len(html) > 1000:
-                    with cache_lock:
-                        price_cache["html_cache"][metal] = html
-                        price_cache["tab_status"][metal] = "active"
-                    logger.info(f"✓ HTML extracted for {metal.upper()}")
-                    return True
+                # Wait untuk element muncul
+                try:
+                    wait = WebDriverWait(self.driver, 10)
                     
+                    # Wait element visible
+                    wait.until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']")),
+                        message=f"Element not found for {key}"
+                    )
+                    
+                    # Ensure ada text
+                    wait.until(
+                        lambda d: len(d.find_element(By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']").text.strip()) > 0,
+                        message=f"No text for {key}"
+                    )
+                    
+                    logger.debug(f"HTML ready for {key}")
+                    
+                except TimeoutException as e:
+                    logger.error(f"Timeout for {key}: {e}")
+                    return False
+                except StaleElementReferenceException:
+                    logger.error(f"Stale element for {key}, retrying...")
+                    return self.load_and_save_html(key, refresh)
+                
+                # Simpan HTML
+                try:
+                    html = self.driver.page_source
+                    if html and len(html) > 1000:
+                        with cache_lock:
+                            price_cache["html_cache"][key] = html
+                            price_cache["tab_status"][key] = "active"
+                        logger.info(f"✓ HTML extracted for {key.upper()} ({len(html)} bytes)")
+                        return True
+                    else:
+                        logger.warning(f"Invalid HTML size for {key}")
+                        return False
+                        
+                except Exception as e:
+                    logger.error(f"Error saving HTML for {key}: {e}")
+                    return False
+                    
+        except WebDriverException as e:
+            logger.error(f"WebDriver error for {key}: {e}")
+            with cache_lock:
+                price_cache["tab_status"][key] = "error"
+            return False
         except Exception as e:
-            logger.error(f"Error loading HTML for {metal}: {e}")
+            logger.error(f"Unexpected error for {key}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return False
     
-    def refresh_all_tabs(self, refresh: bool = False):
-        """Refresh semua metal tabs"""
+    def refresh_all_tabs(self, refresh: bool = False, include_usdidr: bool = True):
+        """Refresh semua tab (metals + USDIDR)
+        
+        Args:
+            refresh: Jika True, refresh halaman dulu
+            include_usdidr: Jika True, include USDIDR tab
+        """
+        action = "Refreshing" if refresh else "Extracting"
+        logger.info(f"{action} all tabs...")
+        
         results = {}
+        
+        # Refresh metal tabs
         for metal in TRADINGVIEW_SYMBOLS.keys():
             try:
                 success = self.load_and_save_html(metal, refresh=refresh)
@@ -466,6 +390,16 @@ class MultiTabBrowserScraper:
                 logger.error(f"Error processing {metal}: {e}")
                 results[metal] = False
             time.sleep(0.3)
+        
+        # Refresh USDIDR tab
+        if include_usdidr:
+            try:
+                success = self.load_and_save_html("usdidr", refresh=refresh)
+                results["usdidr"] = success
+            except Exception as e:
+                logger.error(f"Error processing USDIDR: {e}")
+                results["usdidr"] = False
+        
         return results
     
     def close(self):
@@ -481,19 +415,25 @@ class MultiTabBrowserScraper:
             import shutil, os
             if self.profile_dir and os.path.exists(self.profile_dir):
                 shutil.rmtree(self.profile_dir, ignore_errors=True)
+                logger.info("✓ Profile directory cleaned")
         except Exception as e:
             logger.error(f"Error cleaning profile: {e}")
 
 # Global browser instance
 browser_scraper: Optional[MultiTabBrowserScraper] = None
 
-def extract_price_from_html(metal: str) -> Optional[float]:
-    """Extract harga dari HTML cache"""
+def extract_price_from_html(key: str) -> Optional[float]:
+    """Extract harga/rate dari HTML yang sudah disimpan
+    
+    Args:
+        key: 'gold', 'silver', etc, atau 'usdidr'
+    """
     try:
         with cache_lock:
-            html = price_cache["html_cache"].get(metal)
+            html = price_cache["html_cache"].get(key)
         
         if not html:
+            logger.warning(f"No HTML cached for {key}")
             return None
         
         soup = BeautifulSoup(html, 'lxml')
@@ -501,81 +441,174 @@ def extract_price_from_html(metal: str) -> Optional[float]:
         
         if symbol_last_value:
             text_content = symbol_last_value.get_text(strip=True)
+            logger.debug(f"Raw text for {key}: {text_content}")
+            
+            # Parse price/rate
             price_str = text_content.replace(',', '')
             
-            if len(price_str) > 3 and '.' not in price_str:
+            # Handle formatting untuk metal prices (2 decimal)
+            if len(price_str) > 3 and '.' not in price_str and key != "usdidr":
                 price_str = price_str[:-2] + '.' + price_str[-2:]
             
             try:
-                price = float(price_str)
-                if 1 < price < 10000:
-                    logger.info(f"✓ Extracted {metal.upper()}: ${price}")
-                    return price
-            except ValueError:
-                pass
+                value = float(price_str)
+                
+                # Validasi range
+                if key == "usdidr":
+                    # USDIDR range: 10,000 - 20,000
+                    if 10000 < value < 20000:
+                        logger.info(f"✓ Extracted {key.upper()}: {value:,.2f}")
+                        return value
+                    else:
+                        logger.warning(f"USDIDR {value} outside valid range")
+                else:
+                    # Metal price range: 1 - 10,000
+                    if 1 < value < 10000:
+                        logger.info(f"✓ Extracted {key.upper()}: ${value}")
+                        return value
+                    else:
+                        logger.warning(f"Price {value} outside valid range for {key}")
+                        
+            except ValueError as e:
+                logger.error(f"Could not parse value {price_str}: {e}")
+        else:
+            logger.warning(f"Could not find price element for {key}")
         
         return None
         
     except Exception as e:
-        logger.error(f"Error extracting price for {metal}: {e}")
+        logger.error(f"Error extracting price for {key}: {e}")
         return None
 
-def extract_all_prices_parallel() -> Dict[str, float]:
-    """Extract harga parallel dengan thread pool"""
+def extract_all_prices_parallel(include_usdidr: bool = True) -> Dict[str, float]:
+    """Extract semua prices/rates secara paralel dengan thread pool
+    
+    Args:
+        include_usdidr: Jika True, include USDIDR extraction
+    """
+    logger.info("Extracting prices from cached HTML (parallel)...")
+    
     prices_found = {}
     futures = {}
     
+    # Submit metal extraction tasks
     for metal in TRADINGVIEW_SYMBOLS.keys():
         future = thread_pool.submit(extract_price_from_html, metal)
         futures[metal] = future
     
-    for metal, future in futures.items():
+    # Submit USDIDR extraction task
+    if include_usdidr:
+        future = thread_pool.submit(extract_price_from_html, "usdidr")
+        futures["usdidr"] = future
+    
+    # Collect results
+    for key, future in futures.items():
         try:
-            price = future.result(timeout=10)
-            if price:
-                prices_found[metal] = price
+            value = future.result(timeout=10)
+            if value:
+                prices_found[key] = value
                 with cache_lock:
-                    price_cache[metal] = {"price": price, "source": "TradingView"}
+                    if key == "usdidr":
+                        price_cache["usdidr"] = {"rate": value, "source": "TradingView"}
+                    else:
+                        price_cache[key] = {"price": value, "source": "TradingView"}
         except Exception as e:
-            logger.error(f"Error getting price for {metal}: {e}")
+            logger.error(f"Error getting value for {key}: {e}")
     
     return prices_found
 
-async def refresh_prices_on_request():
-    """Refresh prices saat request"""
+async def refresh_prices_on_request(include_usdidr: bool = True):
+    """Refresh prices saat ada request"""
+    
     if not browser_scraper:
+        logger.error("Browser scraper not initialized")
         return False
     
-    browser_scraper.refresh_all_tabs(refresh=False)
-    prices_found = extract_all_prices_parallel()
+    logger.info("=" * 60)
+    logger.info("Extracting prices and exchange rate...")
+    logger.info("=" * 60)
     
+    # Extract HTML dari semua tab
+    refresh_results = browser_scraper.refresh_all_tabs(refresh=False, include_usdidr=include_usdidr)
+    
+    success_count = sum(1 for s in refresh_results.values() if s)
+    total_tabs = 6 if include_usdidr else 5
+    logger.info(f"Successfully extracted {success_count}/{total_tabs} tabs")
+    
+    # Extract prices/rates secara paralel
+    values_found = extract_all_prices_parallel(include_usdidr=include_usdidr)
+    
+    # Update timestamp
     with cache_lock:
         price_cache["last_update"] = datetime.utcnow().isoformat()
     
-    return len(prices_found) > 0
+    logger.info("=" * 60)
+    logger.info(f"Extraction complete. Got {len(values_found)} values")
+    logger.info(f"Last update: {price_cache['last_update']}")
+    logger.info("=" * 60)
+    
+    return len(values_found) > 0
+
+async def manual_refresh_prices():
+    """Manual refresh - refresh semua tab dulu baru extract"""
+    
+    if not browser_scraper:
+        logger.error("Browser scraper not initialized")
+        return False
+    
+    logger.info("=" * 60)
+    logger.info("Manual refresh - refreshing all 6 tabs...")
+    logger.info("=" * 60)
+    
+    # Refresh semua tab dengan auto-recovery
+    refresh_results = browser_scraper.refresh_all_tabs(refresh=True, include_usdidr=True)
+    
+    success_count = sum(1 for s in refresh_results.values() if s)
+    logger.info(f"Successfully refreshed {success_count}/6 tabs")
+    
+    # Extract prices/rates secara paralel
+    values_found = extract_all_prices_parallel(include_usdidr=True)
+    
+    # Update timestamp
+    with cache_lock:
+        price_cache["last_update"] = datetime.utcnow().isoformat()
+    
+    logger.info("=" * 60)
+    logger.info(f"Manual refresh complete. Got {len(values_found)} values")
+    logger.info(f"Last update: {price_cache['last_update']}")
+    logger.info("=" * 60)
+    
+    return len(values_found) > 0
 
 async def lifespan(app: FastAPI):
-    """Lifespan context manager"""
+    """Lifespan context manager untuk startup dan shutdown"""
+    
+    # Startup
     global browser_scraper
     logger.info("Application starting up...")
     
     browser_scraper = MultiTabBrowserScraper()
     if not browser_scraper.initialize():
+        logger.error("Failed to initialize browser scraper")
         raise Exception("Browser initialization failed")
     
-    await refresh_prices_on_request()
+    # Initial refresh untuk semua tab
+    await refresh_prices_on_request(include_usdidr=True)
+    logger.info("Initial price update completed")
     
     yield
     
+    # Shutdown
     logger.info("Application shutting down...")
     if browser_scraper:
         browser_scraper.close()
     thread_pool.shutdown(wait=True)
+    logger.info("Shutdown completed")
 
 app = FastAPI(
-    title="Metal Price API with IDR Conversion",
-    description="Real-time Metal Prices with Dynamic USDIDR Conversion",
-    version="3.0.0",
+    title="Metal Price API with 6 Persistent Tabs",
+    description="Real-time Metal Prices + USDIDR Exchange Rate (6 Active Tabs)",
+    version="3.1.0",
     lifespan=lifespan
 )
 
@@ -590,63 +623,111 @@ app.add_middleware(
 @app.get("/", tags=["Info"])
 async def root():
     return {
-        "name": "Metal Price API with IDR Conversion",
-        "version": "3.0.0",
+        "name": "Metal Price API with 6 Persistent Tabs",
+        "version": "3.1.0",
+        "source": "TradingView Multi-Tab Scraping (Selenium)",
         "features": [
-            "Multi-tab Selenium untuk metal prices",
-            "Dynamic USDIDR tab (on-demand, auto-close)",
-            "Konversi otomatis USD ke IDR",
+            "6 persistent tabs (5 metals + 1 USDIDR)",
             "Parallel extraction dengan thread pool",
-            "Auto-recovery untuk crashed tabs"
+            "Auto-recovery untuk crashed tabs",
+            "Real-time exchange rate USDIDR",
+            "Konversi otomatis USD ke IDR"
         ],
+        "tabs": {
+            "metals": list(TRADINGVIEW_SYMBOLS.keys()),
+            "currency": "USDIDR",
+            "total": 6
+        },
         "endpoints": {
-            "GET /prices/{metal}?gram={value}&currency=IDR": "Get metal price with optional IDR conversion",
-            "GET /prices": "Get all metal prices",
+            "GET /": "This endpoint",
+            "GET /prices": "Get all metal prices with USDIDR rate and IDR conversion",
+            "GET /prices/{metal}?gram={value}&currency=IDR": "Get specific metal price with gram conversion",
             "GET /health": "Health check",
-            "POST /refresh": "Manual refresh"
+            "POST /refresh": "Manual refresh all tabs",
+            "GET /symbols": "Get list of symbols",
+            "GET /debug/cache": "Debug cache and tab status"
         }
     }
 
 @app.get("/health", tags=["Health"])
 async def health_check():
+    """Health check endpoint"""
     with cache_lock:
-        cached_count = len([p for p in price_cache if p in TRADINGVIEW_SYMBOLS and price_cache[p]])
-        usdidr_rate = price_cache.get("usdidr_rate")
+        metal_count = len([p for p in price_cache if p in TRADINGVIEW_SYMBOLS and price_cache[p]])
+        usdidr_rate = price_cache.get("usdidr", {}).get("rate")
+        tab_status = price_cache.get("tab_status", {})
+    
+    active_tabs = sum(1 for s in tab_status.values() if s == "active")
     
     return {
-        "status": "healthy" if cached_count > 0 else "initializing",
-        "cached_metals": cached_count,
+        "status": "healthy" if metal_count > 0 else "initializing",
+        "last_update": price_cache.get("last_update"),
+        "cached_metals": metal_count,
+        "total_metals": len(TRADINGVIEW_SYMBOLS),
         "usdidr_rate": usdidr_rate,
-        "usdidr_cached": usdidr_rate is not None,
+        "active_tabs": active_tabs,
+        "total_tabs": 6,
+        "tab_status": tab_status,
         "browser_active": browser_scraper is not None
     }
 
 @app.get("/prices", response_model=MetalPriceResponse, tags=["Prices"])
 async def get_all_prices():
-    """Get all metal prices"""
-    await refresh_prices_on_request()
+    """
+    Get semua harga metal dengan exchange rate USDIDR dan harga per gram IDR
+    
+    Returns:
+    - Harga metal per troy ounce (USD)
+    - Harga per gram (USD)
+    - Harga per gram (IDR)
+    - Exchange rate USDIDR
+    """
+    
+    # Refresh semua data (metals + USDIDR)
+    await refresh_prices_on_request(include_usdidr=True)
     
     with cache_lock:
         if not price_cache.get("last_update"):
-            raise HTTPException(status_code=503, detail="Data not available")
+            raise HTTPException(status_code=503, detail="Data not available yet")
         
+        # Get USDIDR rate
+        usdidr_rate = None
+        if price_cache.get("usdidr"):
+            usdidr_rate = price_cache["usdidr"].get("rate")
+        
+        # Build metal prices
+        metals = list(TRADINGVIEW_SYMBOLS.keys())
         prices = []
-        for metal in TRADINGVIEW_SYMBOLS.keys():
+        
+        for metal in metals:
             if price_cache.get(metal):
+                price_per_troy_ounce = price_cache[metal]["price"]
+                price_per_gram_usd = price_per_troy_ounce / TROY_OUNCE_TO_GRAM
+                
+                # Hitung harga per gram IDR jika ada rate
+                price_per_gram_idr = None
+                if usdidr_rate:
+                    price_per_gram_idr = price_per_gram_usd * usdidr_rate
+                
                 prices.append(
                     MetalPrice(
                         metal=metal.upper(),
-                        price_usd=price_cache[metal]["price"],
-                        timestamp=price_cache["last_update"]
+                        price_usd=price_per_troy_ounce,
+                        price_per_gram_usd=round(price_per_gram_usd, 4),
+                        price_per_gram_idr=round(price_per_gram_idr, 2) if price_per_gram_idr else None,
+                        currency="USD/IDR" if usdidr_rate else "USD",
+                        timestamp=price_cache["last_update"],
+                        source="TradingView"
                     )
                 )
     
     if not prices:
-        raise HTTPException(status_code=503, detail="No data available")
+        raise HTTPException(status_code=503, detail="No metal data available")
     
     return MetalPriceResponse(
         status="success",
         data=prices,
+        exchange_rate_usdidr=round(usdidr_rate, 2) if usdidr_rate else None,
         last_updated=price_cache.get("last_update", "")
     )
 
@@ -682,8 +763,9 @@ async def get_metal_price(
     if gram <= 0:
         raise HTTPException(status_code=400, detail="Gram harus > 0")
     
-    # Refresh metal prices
-    await refresh_prices_on_request()
+    # Refresh metal prices dan USDIDR (jika perlu IDR)
+    include_usdidr = (currency == "IDR")
+    await refresh_prices_on_request(include_usdidr=include_usdidr)
     
     with cache_lock:
         if not price_cache.get(metal):
@@ -710,21 +792,18 @@ async def get_metal_price(
         }
     }
     
-    # Jika request IDR, scrape USDIDR
+    # Jika request IDR, ambil USDIDR rate dari cache
     if currency == "IDR":
-        logger.info("IDR conversion requested, fetching USDIDR rate...")
+        with cache_lock:
+            usdidr_data = price_cache.get("usdidr")
         
-        if not browser_scraper:
-            raise HTTPException(status_code=503, detail="Browser not available")
-        
-        # Scrape USDIDR dengan auto tab management
-        exchange_rate = browser_scraper.get_usdidr_rate_with_auto_tab()
-        
-        if not exchange_rate:
+        if not usdidr_data or not usdidr_data.get("rate"):
             raise HTTPException(
                 status_code=503, 
-                detail="Gagal mendapatkan exchange rate USDIDR. Silakan coba lagi."
+                detail="USDIDR exchange rate tidak tersedia. Silakan coba lagi."
             )
+        
+        exchange_rate = usdidr_data["rate"]
         
         # Konversi ke IDR
         price_per_gram_idr = price_per_gram_usd * exchange_rate
@@ -739,37 +818,94 @@ async def get_metal_price(
         
         response_data["conversion_info"].update({
             "exchange_rate_usdidr": round(exchange_rate, 2),
-            "calculation_idr": f"{gram}g × Rp{round(price_per_gram_idr, 2):,.0f}/g = Rp{round(total_price_idr, 2):,.0f}",
-            "usdidr_timestamp": price_cache.get("usdidr_last_update", "")
+            "calculation_idr": f"{gram}g × Rp{round(price_per_gram_idr, 2):,.0f}/g = Rp{round(total_price_idr, 2):,.0f}"
         })
     
     return MetalPriceWithGram(**response_data)
 
 @app.post("/refresh", tags=["Admin"])
 async def manual_refresh():
-    """Manual refresh all prices"""
-    if not browser_scraper:
-        raise HTTPException(status_code=503, detail="Browser not available")
-    
-    browser_scraper.refresh_all_tabs(refresh=True)
-    prices_found = extract_all_prices_parallel()
+    """Manual refresh all prices dan USDIDR rate"""
+    success = await manual_refresh_prices()
     
     with cache_lock:
-        price_cache["last_update"] = datetime.utcnow().isoformat()
+        tab_status = price_cache.get("tab_status", {})
+        usdidr_rate = price_cache.get("usdidr", {}).get("rate")
     
     return {
-        "status": "success",
-        "message": "Manual refresh completed",
-        "prices_found": len(prices_found),
-        "last_update": price_cache.get("last_update")
+        "status": "success" if success else "partial",
+        "message": "Manual refresh completed for all 6 tabs",
+        "last_update": price_cache.get("last_update"),
+        "tab_status": tab_status,
+        "usdidr_rate": round(usdidr_rate, 2) if usdidr_rate else None,
+        "total_tabs": 6
     }
 
 @app.get("/symbols", tags=["Info"])
 async def get_symbols():
+    """Get list of symbols"""
     return {
-        "metals": {m: d['url'] for m, d in TRADINGVIEW_SYMBOLS.items()},
-        "usdidr": USDIDR_URL,
-        "note": "USDIDR tab opened dynamically on-demand"
+        "metals": {
+            metal: data['url'] 
+            for metal, data in TRADINGVIEW_SYMBOLS.items()
+        },
+        "currency": {
+            "usdidr": USDIDR_CONFIG['url']
+        },
+        "description": "Metal symbols dan USDIDR dari TradingView",
+        "scraping_method": "Multi-Tab Selenium (6 Persistent Tabs) + Thread Pool Extraction + Auto-Recovery",
+        "total_tabs": 6
+    }
+
+@app.get("/debug/cache", tags=["Debug"])
+async def debug_cache():
+    """Debug cache status dan tab health"""
+    with cache_lock:
+        cached_metals = {
+            metal: price_cache.get(metal, {}).get("price") 
+            for metal in TRADINGVIEW_SYMBOLS.keys()
+        }
+        html_size = {
+            key: len(price_cache.get("html_cache", {}).get(key, ""))
+            for key in list(TRADINGVIEW_SYMBOLS.keys()) + ["usdidr"]
+        }
+        tab_status = price_cache.get("tab_status", {})
+        usdidr_rate = price_cache.get("usdidr", {}).get("rate")
+    
+    return {
+        "last_update": price_cache.get("last_update"),
+        "cached_metals": cached_metals,
+        "usdidr_rate": usdidr_rate,
+        "html_cache_size_bytes": html_size,
+        "tab_status": tab_status,
+        "browser_active": browser_scraper is not None,
+        "total_cached_metals": len([p for p in cached_metals.values() if p]),
+        "active_tabs": sum(1 for s in tab_status.values() if s == "active"),
+        "total_tabs": 6
+    }
+
+@app.get("/exchange-rate", tags=["Currency"])
+async def get_exchange_rate():
+    """Get current USDIDR exchange rate"""
+    
+    # Refresh USDIDR
+    await refresh_prices_on_request(include_usdidr=True)
+    
+    with cache_lock:
+        usdidr_data = price_cache.get("usdidr")
+    
+    if not usdidr_data or not usdidr_data.get("rate"):
+        raise HTTPException(
+            status_code=503,
+            detail="USDIDR exchange rate tidak tersedia"
+        )
+    
+    return {
+        "currency_pair": "USDIDR",
+        "rate": round(usdidr_data["rate"], 2),
+        "source": usdidr_data.get("source", "TradingView"),
+        "timestamp": price_cache.get("last_update", ""),
+        "description": "1 USD = X IDR"
     }
 
 if __name__ == "__main__":
