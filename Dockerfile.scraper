@@ -1,0 +1,21 @@
+# ──────────────────────────────────────────────────────────────
+# Dockerfile.scraper — Playwright + Chromium scraper daemon
+# ──────────────────────────────────────────────────────────────
+# Use Microsoft's official Playwright image which comes with
+# Chromium + all OS dependencies pre-installed. This avoids the
+# ttf-unifont / ttf-ubuntu-font-family package errors on Debian Trixie.
+FROM mcr.microsoft.com/playwright/python:v1.49.1-noble
+
+WORKDIR /app
+
+# Python deps
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+  pip install --no-cache-dir \
+  "redis[hiredis]==5.2.1" \
+  playwright==1.49.1
+
+# Application code
+COPY config.py scraper_daemon.py ./
+
+CMD ["python", "-u", "scraper_daemon.py"]

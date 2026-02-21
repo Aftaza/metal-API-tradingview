@@ -1,0 +1,37 @@
+# ──────────────────────────────────────────────────────────────
+# Dockerfile.api — Lightweight FastAPI container (no browser)
+# ──────────────────────────────────────────────────────────────
+FROM python:3.11-slim
+
+# Non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+# System deps (curl for healthcheck)
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends curl && \
+  rm -rf /var/lib/apt/lists/*
+
+# Python deps — only what the API needs
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+  pip install --no-cache-dir \
+  fastapi==0.115.6 \
+  "uvicorn[standard]==0.34.0" \
+  "redis[hiredis]==5.2.1" \
+  pydantic==2.10.3
+
+# Application code
+COPY config.py api.py ./
+
+# Permissions
+RUN chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
