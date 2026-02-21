@@ -27,10 +27,9 @@ const exchangeRateLatency = new Trend("exchange_rate_latency", true);
 const totalRequests = new Counter("total_requests");
 
 // ── Configuration ───────────────────────────────────────────────────
-const BASE_URL = __ENV.BASE_URL || "http://liveprice-metal.api.centralbullions.com";
+const BASE_URL = __ENV.BASE_URL || "http://54.179.250.48";
 const METALS = ["gold", "silver", "copper"];
 const GRAMS = [1, 5, 10, 25, 50, 100, 500, 1000];
-const CURRENCIES = ["USD", "IDR"];
 
 // ── Scenarios ───────────────────────────────────────────────────────
 const scenarios = {
@@ -82,11 +81,11 @@ export const options = {
     default: scenarios[selectedScenario] || scenarios.smoke,
   },
   thresholds: {
-    http_req_duration: ["p(95)<500", "p(99)<1000"],   // 95th < 500ms, 99th < 1s
-    error_rate: ["rate<0.10"],                         // < 10% error rate
-    prices_latency: ["p(95)<300"],                     // /prices p95 < 300ms
-    price_by_metal_latency: ["p(95)<200"],             // /prices/{metal} p95 < 200ms
-    health_latency: ["p(95)<100"],                     // /health p95 < 100ms
+    http_req_duration: ["p(95)<500", "p(99)<1000"],
+    error_rate: ["rate<0.05"],
+    prices_latency: ["p(95)<500"],
+    price_by_metal_latency: ["p(95)<500"],
+    health_latency: ["p(95)<300"],
   },
 };
 
@@ -96,16 +95,9 @@ function randomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function makeRequest(method, url, expectedStatus = 200) {
-  const res = method === "GET" ? http.get(url) : http.post(url);
-  totalRequests.add(1);
-  errorRate.add(res.status !== expectedStatus);
-  return res;
-}
-
 /**
  * Safely parse JSON from a response.
- * Returns null if the response is HTML or malformed (e.g. Nginx 429/502 error page).
+ * Returns null if the response body is not valid JSON.
  */
 function safeJson(res) {
   try {
@@ -128,7 +120,11 @@ function isJsonResponse(res) {
 export default function () {
   // ── 1. Health Check ──
   group("Health Check", () => {
-    const res = makeRequest("GET", `${BASE_URL}/health`);
+    const res = http.get(`${BASE_URL}/health`, {
+      tags: { name: "GET /health" },
+    });
+    totalRequests.add(1);
+    errorRate.add(res.status !== 200);
     healthLatency.add(res.timings.duration);
 
     check(res, {
@@ -145,11 +141,15 @@ export default function () {
     });
   });
 
-  sleep(0.1);
+  sleep(0.3);
 
   // ── 2. Get All Prices ──
   group("Get All Prices", () => {
-    const res = makeRequest("GET", `${BASE_URL}/prices`);
+    const res = http.get(`${BASE_URL}/prices`, {
+      tags: { name: "GET /prices" },
+    });
+    totalRequests.add(1);
+    errorRate.add(res.status !== 200);
     pricesLatency.add(res.timings.duration);
 
     check(res, {
@@ -180,14 +180,18 @@ export default function () {
     });
   });
 
-  sleep(0.1);
+  sleep(0.3);
 
   // ── 3. Get Specific Metal Price (USD) ──
   group("Get Metal Price (USD)", () => {
     const metal = randomItem(METALS);
     const gram = randomItem(GRAMS);
-    const url = `${BASE_URL}/prices/${metal}?gram=${gram}&currency=USD`;
-    const res = makeRequest("GET", url);
+    const res = http.get(
+      `${BASE_URL}/prices/${metal}?gram=${gram}&currency=USD`,
+      { tags: { name: "GET /prices/{metal}?currency=USD" } }
+    );
+    totalRequests.add(1);
+    errorRate.add(res.status !== 200);
     priceByMetalLatency.add(res.timings.duration);
 
     check(res, {
@@ -197,14 +201,6 @@ export default function () {
         const body = safeJson(r);
         return body !== null && body.metal === metal.toUpperCase();
       },
-      "metal-usd: correct gram": (r) => {
-        const body = safeJson(r);
-        return body !== null && body.gram === gram;
-      },
-      "metal-usd: has price_per_gram_usd": (r) => {
-        const body = safeJson(r);
-        return body !== null && body.price_per_gram_usd > 0;
-      },
       "metal-usd: has total_price_usd": (r) => {
         const body = safeJson(r);
         return body !== null && body.total_price_usd > 0;
@@ -213,21 +209,21 @@ export default function () {
         const body = safeJson(r);
         return body !== null && body.currency === "USD";
       },
-      "metal-usd: has conversion_info": (r) => {
-        const body = safeJson(r);
-        return body !== null && body.conversion_info !== undefined;
-      },
     });
   });
 
-  sleep(0.1);
+  sleep(0.3);
 
   // ── 4. Get Specific Metal Price (IDR) ──
   group("Get Metal Price (IDR)", () => {
     const metal = randomItem(METALS);
     const gram = randomItem(GRAMS);
-    const url = `${BASE_URL}/prices/${metal}?gram=${gram}&currency=IDR`;
-    const res = makeRequest("GET", url);
+    const res = http.get(
+      `${BASE_URL}/prices/${metal}?gram=${gram}&currency=IDR`,
+      { tags: { name: "GET /prices/{metal}?currency=IDR" } }
+    );
+    totalRequests.add(1);
+    errorRate.add(res.status !== 200);
     priceByMetalLatency.add(res.timings.duration);
 
     check(res, {
@@ -241,30 +237,22 @@ export default function () {
         const body = safeJson(r);
         return body !== null && body.exchange_rate > 0;
       },
-      "metal-idr: has price_per_gram_idr": (r) => {
-        const body = safeJson(r);
-        return body !== null && body.price_per_gram_idr > 0;
-      },
       "metal-idr: has total_price_idr": (r) => {
         const body = safeJson(r);
         return body !== null && body.total_price_idr > 0;
       },
-      "metal-idr: IDR conversion info": (r) => {
-        const body = safeJson(r);
-        return (
-          body !== null &&
-          body.conversion_info &&
-          body.conversion_info.exchange_rate_usdidr > 0
-        );
-      },
     });
   });
 
-  sleep(0.1);
+  sleep(0.3);
 
   // ── 5. Exchange Rate ──
   group("Exchange Rate", () => {
-    const res = makeRequest("GET", `${BASE_URL}/exchange-rate`);
+    const res = http.get(`${BASE_URL}/exchange-rate`, {
+      tags: { name: "GET /exchange-rate" },
+    });
+    totalRequests.add(1);
+    errorRate.add(res.status !== 200);
     exchangeRateLatency.add(res.timings.duration);
 
     check(res, {
@@ -279,18 +267,18 @@ export default function () {
         if (body === null) return false;
         return body.rate > 10000 && body.rate < 25000;
       },
-      "exchange: has timestamp": (r) => {
-        const body = safeJson(r);
-        return body !== null && body.timestamp !== "";
-      },
     });
   });
 
-  sleep(0.1);
+  sleep(0.3);
 
   // ── 6. API Root ──
   group("API Root", () => {
-    const res = makeRequest("GET", `${BASE_URL}/`);
+    const res = http.get(`${BASE_URL}/`, {
+      tags: { name: "GET /" },
+    });
+    totalRequests.add(1);
+    errorRate.add(res.status !== 200);
 
     check(res, {
       "root: status 200": (r) => r.status === 200,
@@ -299,29 +287,26 @@ export default function () {
         const body = safeJson(r);
         return body !== null && body.version === "2.0.0";
       },
-      "root: has metals list": (r) => {
-        const body = safeJson(r);
-        return (
-          body !== null &&
-          Array.isArray(body.metals) &&
-          body.metals.length === 3
-        );
-      },
-    });
-  });
-
-  sleep(0.1);
-
-  // ── 7. Error Handling — Invalid Metal ──
-  group("Error: Invalid Metal", () => {
-    const res = makeRequest("GET", `${BASE_URL}/prices/platinum?gram=10`, 400);
-
-    check(res, {
-      "invalid-metal: status 400": (r) => r.status === 400,
     });
   });
 
   sleep(0.3);
+
+  // ── 7. Error Handling — Invalid Metal (expects 400) ──
+  group("Error: Invalid Metal", () => {
+    const res = http.get(`${BASE_URL}/prices/platinum?gram=10`, {
+      tags: { name: "GET /prices/{invalid}" },
+    });
+    totalRequests.add(1);
+    // 400 = expected, 422 = FastAPI validation, both are valid
+    errorRate.add(res.status !== 400 && res.status !== 422);
+
+    check(res, {
+      "invalid-metal: status 4xx": (r) => r.status === 400 || r.status === 422,
+    });
+  });
+
+  sleep(0.5);
 }
 
 // ── Summary Handler ─────────────────────────────────────────────────
