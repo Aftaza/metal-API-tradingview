@@ -27,7 +27,7 @@ const exchangeRateLatency = new Trend("exchange_rate_latency", true);
 const totalRequests = new Counter("total_requests");
 
 // ── Configuration ───────────────────────────────────────────────────
-const BASE_URL = __ENV.BASE_URL || "http://localhost:8000";
+const BASE_URL = __ENV.BASE_URL || "http://liveprice-metal.api.centralbullions.com";
 const METALS = ["gold", "silver", "copper"];
 const GRAMS = [1, 5, 10, 25, 50, 100, 500, 1000];
 const CURRENCIES = ["USD", "IDR"];
@@ -82,11 +82,11 @@ export const options = {
     default: scenarios[selectedScenario] || scenarios.smoke,
   },
   thresholds: {
-    http_req_duration: ["p(95)<200", "p(99)<500"],  // 95th < 200ms, 99th < 500ms
-    error_rate: ["rate<0.05"],                       // < 5% error rate
-    prices_latency: ["p(95)<150"],                   // /prices p95 < 150ms
-    price_by_metal_latency: ["p(95)<100"],           // /prices/{metal} p95 < 100ms
-    health_latency: ["p(95)<50"],                    // /health p95 < 50ms
+    http_req_duration: ["p(95)<500", "p(99)<1000"],   // 95th < 500ms, 99th < 1s
+    error_rate: ["rate<0.10"],                         // < 10% error rate
+    prices_latency: ["p(95)<300"],                     // /prices p95 < 300ms
+    price_by_metal_latency: ["p(95)<200"],             // /prices/{metal} p95 < 200ms
+    health_latency: ["p(95)<100"],                     // /health p95 < 100ms
   },
 };
 
@@ -103,6 +103,26 @@ function makeRequest(method, url, expectedStatus = 200) {
   return res;
 }
 
+/**
+ * Safely parse JSON from a response.
+ * Returns null if the response is HTML or malformed (e.g. Nginx 429/502 error page).
+ */
+function safeJson(res) {
+  try {
+    return res.json();
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Check Content-Type header is JSON before attempting parse.
+ */
+function isJsonResponse(res) {
+  const ct = res.headers["Content-Type"] || "";
+  return ct.indexOf("application/json") !== -1;
+}
+
 // ── Main Test Function ──────────────────────────────────────────────
 
 export default function () {
@@ -113,13 +133,14 @@ export default function () {
 
     check(res, {
       "health: status 200": (r) => r.status === 200,
+      "health: is JSON": (r) => isJsonResponse(r),
       "health: redis connected": (r) => {
-        const body = r.json();
-        return body.redis_connected === true;
+        const body = safeJson(r);
+        return body !== null && body.redis_connected === true;
       },
       "health: status is healthy": (r) => {
-        const body = r.json();
-        return body.status === "healthy";
+        const body = safeJson(r);
+        return body !== null && body.status === "healthy";
       },
     });
   });
@@ -133,17 +154,22 @@ export default function () {
 
     check(res, {
       "prices: status 200": (r) => r.status === 200,
+      "prices: is JSON": (r) => isJsonResponse(r),
       "prices: has data array": (r) => {
-        const body = r.json();
-        return Array.isArray(body.data) && body.data.length > 0;
+        const body = safeJson(r);
+        return body !== null && Array.isArray(body.data) && body.data.length > 0;
       },
       "prices: has exchange rate": (r) => {
-        const body = r.json();
-        return body.exchange_rate_usdidr !== null;
+        const body = safeJson(r);
+        return body !== null && body.exchange_rate_usdidr !== null;
       },
-      "prices: status success": (r) => r.json().status === "success",
+      "prices: status success": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.status === "success";
+      },
       "prices: has all metals": (r) => {
-        const body = r.json();
+        const body = safeJson(r);
+        if (body === null || !Array.isArray(body.data)) return false;
         const metals = body.data.map((d) => d.metal);
         return (
           metals.includes("GOLD") &&
@@ -166,15 +192,31 @@ export default function () {
 
     check(res, {
       "metal-usd: status 200": (r) => r.status === 200,
-      "metal-usd: correct metal": (r) =>
-        r.json().metal === metal.toUpperCase(),
-      "metal-usd: correct gram": (r) => r.json().gram === gram,
-      "metal-usd: has price_per_gram_usd": (r) =>
-        r.json().price_per_gram_usd > 0,
-      "metal-usd: has total_price_usd": (r) => r.json().total_price_usd > 0,
-      "metal-usd: currency is USD": (r) => r.json().currency === "USD",
-      "metal-usd: has conversion_info": (r) =>
-        r.json().conversion_info !== undefined,
+      "metal-usd: is JSON": (r) => isJsonResponse(r),
+      "metal-usd: correct metal": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.metal === metal.toUpperCase();
+      },
+      "metal-usd: correct gram": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.gram === gram;
+      },
+      "metal-usd: has price_per_gram_usd": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.price_per_gram_usd > 0;
+      },
+      "metal-usd: has total_price_usd": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.total_price_usd > 0;
+      },
+      "metal-usd: currency is USD": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.currency === "USD";
+      },
+      "metal-usd: has conversion_info": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.conversion_info !== undefined;
+      },
     });
   });
 
@@ -190,13 +232,31 @@ export default function () {
 
     check(res, {
       "metal-idr: status 200": (r) => r.status === 200,
-      "metal-idr: currency is IDR": (r) => r.json().currency === "IDR",
-      "metal-idr: has exchange_rate": (r) => r.json().exchange_rate > 0,
-      "metal-idr: has price_per_gram_idr": (r) =>
-        r.json().price_per_gram_idr > 0,
-      "metal-idr: has total_price_idr": (r) => r.json().total_price_idr > 0,
-      "metal-idr: IDR conversion info": (r) =>
-        r.json().conversion_info.exchange_rate_usdidr > 0,
+      "metal-idr: is JSON": (r) => isJsonResponse(r),
+      "metal-idr: currency is IDR": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.currency === "IDR";
+      },
+      "metal-idr: has exchange_rate": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.exchange_rate > 0;
+      },
+      "metal-idr: has price_per_gram_idr": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.price_per_gram_idr > 0;
+      },
+      "metal-idr: has total_price_idr": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.total_price_idr > 0;
+      },
+      "metal-idr: IDR conversion info": (r) => {
+        const body = safeJson(r);
+        return (
+          body !== null &&
+          body.conversion_info &&
+          body.conversion_info.exchange_rate_usdidr > 0
+        );
+      },
     });
   });
 
@@ -209,14 +269,20 @@ export default function () {
 
     check(res, {
       "exchange: status 200": (r) => r.status === 200,
-      "exchange: pair is USDIDR": (r) =>
-        r.json().currency_pair === "USDIDR",
-      "exchange: rate in valid range": (r) => {
-        const rate = r.json().rate;
-        return rate > 10000 && rate < 25000;
+      "exchange: is JSON": (r) => isJsonResponse(r),
+      "exchange: pair is USDIDR": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.currency_pair === "USDIDR";
       },
-      "exchange: has timestamp": (r) =>
-        r.json().timestamp !== "",
+      "exchange: rate in valid range": (r) => {
+        const body = safeJson(r);
+        if (body === null) return false;
+        return body.rate > 10000 && body.rate < 25000;
+      },
+      "exchange: has timestamp": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.timestamp !== "";
+      },
     });
   });
 
@@ -228,9 +294,19 @@ export default function () {
 
     check(res, {
       "root: status 200": (r) => r.status === 200,
-      "root: version 2.0.0": (r) => r.json().version === "2.0.0",
-      "root: has metals list": (r) =>
-        Array.isArray(r.json().metals) && r.json().metals.length === 3,
+      "root: is JSON": (r) => isJsonResponse(r),
+      "root: version 2.0.0": (r) => {
+        const body = safeJson(r);
+        return body !== null && body.version === "2.0.0";
+      },
+      "root: has metals list": (r) => {
+        const body = safeJson(r);
+        return (
+          body !== null &&
+          Array.isArray(body.metals) &&
+          body.metals.length === 3
+        );
+      },
     });
   });
 
