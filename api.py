@@ -1,8 +1,12 @@
 """
-Metal Price REST API v2 — Ultra-Fast Redis-Only
-=================================================
+Metal Price REST API v2-Kitco — Ultra-Fast Redis-Only
+======================================================
 FastAPI application that reads the latest prices directly from Redis.
-Zero scraping logic — all data comes from the scraper daemon.
+Zero scraping logic — all data comes from the scraper daemon workers.
+
+Sources:
+    • Gold, Silver, Copper → Kitco.com
+    • USDIDR → TradingView
 
 Endpoints:
     GET  /            — API info
@@ -26,6 +30,7 @@ from pydantic import BaseModel
 from config import (
     REDIS_URL,
     TROY_OUNCE_TO_GRAM,
+    POUND_TO_GRAM,
     SCRAPE_TARGETS,
     METAL_TARGETS,
     METAL_KEYS,
@@ -44,7 +49,7 @@ class MetalPrice(BaseModel):
     price_per_gram_idr: Optional[float] = None
     currency: str = "USD"
     timestamp: str
-    source: str = "TradingView"
+    source: str = "Kitco"
 
 
 class MetalPriceResponse(BaseModel):
@@ -57,7 +62,6 @@ class MetalPriceResponse(BaseModel):
 class MetalPriceWithGram(BaseModel):
     metal: str
     gram: float
-    price_per_troy_ounce_usd: float
     price_per_gram_usd: float
     total_price_usd: float
     price_per_gram_idr: Optional[float] = None
@@ -65,8 +69,22 @@ class MetalPriceWithGram(BaseModel):
     currency: str
     exchange_rate: Optional[float] = None
     timestamp: str
-    source: str = "TradingView"
+    source: str = "Kitco"
     conversion_info: dict
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Helpers
+# ──────────────────────────────────────────────────────────────────────
+
+def _price_to_per_gram(price: float, unit: str) -> float:
+    """Convert a raw price to price-per-gram based on its unit."""
+    if unit == "troy_ounce":
+        return price / TROY_OUNCE_TO_GRAM
+    elif unit == "pound":
+        return price / POUND_TO_GRAM
+    else:
+        return price  # currency — not applicable
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -109,6 +127,8 @@ async def _read_all_prices() -> tuple[dict[str, dict], dict | None]:
         if target["type"] == "currency":
             usdidr_data = data
         else:
+            # Attach unit from config so API can convert correctly
+            data["_unit"] = target["unit"]
             metal_prices[target["key"]] = data
 
     return metal_prices, usdidr_data
@@ -154,9 +174,9 @@ async def lifespan(app: FastAPI):
 # ──────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="Metal Price API v2",
-    description="Real-time Metal Prices — Redis Stream Processing",
-    version="2.0.0",
+    title="Metal Price API v2-Kitco",
+    description="Real-time Metal Prices — Kitco + TradingView, Redis Stream Processing",
+    version="2.1.0",
     lifespan=lifespan,
 )
 
@@ -176,10 +196,15 @@ app.add_middleware(
 @app.get("/", tags=["Info"])
 async def root():
     return {
-        "name": "Metal Price API v2",
-        "version": "2.0.0",
-        "architecture": "Pure Stream Processing + Redis In-Memory",
-        "source": "TradingView (Playwright Async Scraper Daemon)",
+        "name": "Metal Price API v2-Kitco",
+        "version": "2.1.0",
+        "architecture": "4 Independent Scraper Workers + Redis In-Memory",
+        "sources": {
+            "gold": "Kitco (kitco.com/charts/gold)",
+            "silver": "Kitco (kitco.com/charts/silver)",
+            "copper": "Kitco (kitco.com/price/base-metals/copper)",
+            "usdidr": "TradingView (tradingview.com/symbols/USDIDR/)",
+        },
         "metals": METAL_KEYS,
         "endpoints": {
             "GET /": "This endpoint",
@@ -217,13 +242,14 @@ async def get_all_prices():
     Get all metal prices with USDIDR exchange rate and IDR conversion.
 
     Data is read directly from Redis (sub-millisecond).
+    All prices are converted to per-gram.
     """
     metal_prices, usdidr_data = await _read_all_prices()
 
     if not metal_prices:
         raise HTTPException(
             status_code=503,
-            detail="No metal data available yet. Scraper daemon may still be starting.",
+            detail="No metal data available yet. Scraper workers may still be starting.",
         )
 
     usdidr_rate: float | None = usdidr_data["price"] if usdidr_data else None
@@ -238,8 +264,11 @@ async def get_all_prices():
         if data is None:
             continue
 
-        price_usd = data["price"]
-        price_per_gram_usd = price_usd / TROY_OUNCE_TO_GRAM
+        price_raw = data["price"]
+        unit = data.get("_unit", target["unit"])
+        source = data.get("source", "Kitco")
+
+        price_per_gram_usd = _price_to_per_gram(price_raw, unit)
         price_per_gram_idr = (
             price_per_gram_usd * usdidr_rate if usdidr_rate else None
         )
@@ -250,12 +279,12 @@ async def get_all_prices():
         prices.append(
             MetalPrice(
                 metal=key.upper(),
-                price_usd=price_usd,
+                price_usd=price_raw,
                 price_per_gram_usd=round(price_per_gram_usd, 4),
                 price_per_gram_idr=round(price_per_gram_idr, 2) if price_per_gram_idr else None,
                 currency="USD/IDR" if usdidr_rate else "USD",
                 timestamp=ts,
-                source="TradingView",
+                source=source,
             )
         )
 
@@ -290,6 +319,9 @@ async def get_metal_price(
             detail=f"Invalid metal. Available: {', '.join(METAL_KEYS)}",
         )
 
+    # Find the matching target config for unit info
+    target_config = next(t for t in METAL_TARGETS if t["key"] == metal)
+
     # Read from Redis
     redis_key = f"price:{metal}"
     data = await _read_redis_key(redis_key)
@@ -300,21 +332,25 @@ async def get_metal_price(
             detail=f"{metal.upper()} data not available yet",
         )
 
-    price_per_troy_ounce = data["price"]
-    price_per_gram_usd = price_per_troy_ounce / TROY_OUNCE_TO_GRAM
+    price_raw = data["price"]
+    unit = data.get("unit", target_config["unit"])
+    source = data.get("source", "Kitco")
+
+    price_per_gram_usd = _price_to_per_gram(price_raw, unit)
     total_price_usd = price_per_gram_usd * gram
     ts = data.get("updated_at", datetime.now(timezone.utc).isoformat())
 
     response_data: dict = {
         "metal": metal.upper(),
         "gram": gram,
-        "price_per_troy_ounce_usd": round(price_per_troy_ounce, 2),
         "price_per_gram_usd": round(price_per_gram_usd, 4),
         "total_price_usd": round(total_price_usd, 2),
         "currency": "USD",
         "timestamp": ts,
+        "source": source,
         "conversion_info": {
-            "troy_ounce_to_gram": TROY_OUNCE_TO_GRAM,
+            "original_price": price_raw,
+            "original_unit": unit,
             "calculation_usd": f"{gram}g × ${round(price_per_gram_usd, 4)}/g = ${round(total_price_usd, 2)}",
         },
     }

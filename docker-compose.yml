@@ -1,11 +1,14 @@
 # ──────────────────────────────────────────────────────────────
-#  docker-compose.yml — V2 Pure Stream Processing Architecture
+#  docker-compose.yml — V2-Kitco Architecture
 #
 #  Services:
 #    nginx           →  Reverse proxy (public port 80)
 #    redis           →  In-memory data store (no persistence)
 #    api             →  FastAPI REST endpoint (reads from Redis)
-#    scraper-daemon  →  4 async Playwright workers (writes to Redis)
+#    scraper-gold    →  Kitco Gold worker
+#    scraper-silver  →  Kitco Silver worker
+#    scraper-copper  →  Kitco Copper worker
+#    scraper-usdidr  →  TradingView USDIDR worker
 # ──────────────────────────────────────────────────────────────
 
 services:
@@ -84,17 +87,18 @@ services:
           cpus: "0.25"
           memory: 128M
 
-  # ── Scraper Daemon: 4 Playwright workers ────────────────────
-  scraper-daemon:
+  # ── Scraper: Gold (Kitco) ───────────────────────────────────
+  scraper-gold:
     build:
       context: .
       dockerfile: Dockerfile.scraper
-    container_name: metal-scraper-daemon
+    container_name: metal-scraper-gold
     environment:
+      - SCRAPE_TARGET=gold
       - REDIS_URL=redis://redis:6379/0
-      - SCRAPE_INTERVAL_SECONDS=5
-      - SCRAPE_TIMEOUT_MS=30000
-      - RECOVERY_DELAY_SECONDS=5
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-5}
+      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
       - LOG_LEVEL=INFO
     depends_on:
       redis:
@@ -102,16 +106,102 @@ services:
     networks:
       - metal-network
     restart: unless-stopped
-    # Playwright/Chromium needs shared memory
+    shm_size: "256mb"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  # ── Scraper: Silver (Kitco) ─────────────────────────────────
+  scraper-silver:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    container_name: metal-scraper-silver
+    environment:
+      - SCRAPE_TARGET=silver
+      - REDIS_URL=redis://redis:6379/0
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-5}
+      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - metal-network
+    restart: unless-stopped
+    shm_size: "256mb"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  # ── Scraper: Copper (Kitco) ─────────────────────────────────
+  scraper-copper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    container_name: metal-scraper-copper
+    environment:
+      - SCRAPE_TARGET=copper
+      - REDIS_URL=redis://redis:6379/0
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-5}
+      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - metal-network
+    restart: unless-stopped
+    shm_size: "256mb"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  # ── Scraper: USDIDR (TradingView) ───────────────────────────
+  scraper-usdidr:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    container_name: metal-scraper-usdidr
+    environment:
+      - SCRAPE_TARGET=usdidr
+      - REDIS_URL=redis://redis:6379/0
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-5}
+      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - metal-network
+    restart: unless-stopped
     shm_size: "512mb"
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 2G
+          cpus: "1.5"
+          memory: 768M
         reservations:
           cpus: "0.5"
-          memory: 1G
+          memory: 384M
 
 networks:
   metal-network:

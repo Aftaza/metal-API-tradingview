@@ -8,7 +8,7 @@
  *   - API must be running: docker compose up -d
  *
  * Usage:
- *   k6 run tests/load_test.js                         # default (smoke)
+ *   k6 run tests/load_test.js                          # default (smoke)
  *   k6 run --env SCENARIO=load tests/load_test.js     # sustained load
  *   k6 run --env SCENARIO=stress tests/load_test.js   # stress test
  *   k6 run --env SCENARIO=spike tests/load_test.js    # spike test
@@ -283,9 +283,9 @@ export default function () {
     check(res, {
       "root: status 200": (r) => r.status === 200,
       "root: is JSON": (r) => isJsonResponse(r),
-      "root: version 2.0.0": (r) => {
+      "root: version 2.1.0": (r) => {
         const body = safeJson(r);
-        return body !== null && body.version === "2.0.0";
+        return body !== null && body.version === "2.1.0";
       },
     });
   });
