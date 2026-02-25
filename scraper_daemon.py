@@ -352,30 +352,77 @@ async def _worker(
     MAX_CONSECUTIVE_FAILURES = 5
     MAX_BACKOFF_SECONDS = 30
     HEALTH_TIMEOUT_SECONDS = 300  # 5 min
+    BROWSER_RESTART_SECONDS = 600  # 10 min — periodic full Chromium restart
+    PAGE_RECYCLE_CYCLES = 30       # Recreate page every N cycles (Kitco)
 
     consecutive_failures = 0
     last_success_time = time.monotonic()
+    browser_start_time = time.monotonic()
+    cycle_count = 0
 
     page: Page | None = None
 
     while True:
         # ── Health watchdog: full restart if stuck ─────────────────
-        elapsed = time.monotonic() - last_success_time
+        elapsed_since_success = time.monotonic() - last_success_time
+        elapsed_since_browser = time.monotonic() - browser_start_time
+        needs_periodic_restart = (
+            elapsed_since_browser > BROWSER_RESTART_SECONDS
+            and page is not None
+        )
+
+        # Page recycling for Kitco: recreate page every N cycles
+        # to prevent memory accumulation from repeated goto()
+        needs_page_recycle = (
+            source == "kitco"
+            and page is not None
+            and cycle_count > 0
+            and cycle_count % PAGE_RECYCLE_CYCLES == 0
+        )
+
         needs_full_restart = (
             page is None
             or consecutive_failures >= MAX_CONSECUTIVE_FAILURES
-            or elapsed > HEALTH_TIMEOUT_SECONDS
+            or elapsed_since_success > HEALTH_TIMEOUT_SECONDS
+            or needs_periodic_restart
         )
 
         if needs_full_restart:
             try:
-                reason = (
-                    "initial start" if page is None and consecutive_failures == 0
-                    else f"after {consecutive_failures} failures / {elapsed:.0f}s stuck"
+                if needs_periodic_restart:
+                    reason = (
+                        f"periodic memory cleanup "
+                        f"(browser age {elapsed_since_browser:.0f}s)"
+                    )
+                    logger.info(
+                        f"[{worker_name}] 🔄 Full browser restart "
+                        f"to prevent memory leaks"
+                    )
+                    await bm.launch_browser()
+                    browser_start_time = time.monotonic()
+                elif page is None and consecutive_failures == 0:
+                    reason = "initial start"
+                else:
+                    reason = (
+                        f"after {consecutive_failures} failures / "
+                        f"{elapsed_since_success:.0f}s stuck"
+                    )
+                    # Full browser relaunch on persistent failures
+                    if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                        logger.info(
+                            f"[{worker_name}] 🔄 Full browser restart "
+                            f"due to {consecutive_failures} consecutive "
+                            f"failures"
+                        )
+                        await bm.launch_browser()
+                        browser_start_time = time.monotonic()
+
+                logger.info(
+                    f"[{worker_name}] Creating fresh page ({reason})"
                 )
-                logger.info(f"[{worker_name}] Creating fresh page ({reason})")
                 page = await bm.create_page(target)
                 consecutive_failures = 0
+                cycle_count = 0
                 logger.info(f"[{worker_name}] ✓ Page ready")
             except Exception as exc:
                 consecutive_failures += 1
@@ -390,6 +437,24 @@ async def _worker(
                 )
                 page = None
                 await asyncio.sleep(backoff)
+                continue
+
+        elif needs_page_recycle:
+            try:
+                logger.info(
+                    f"[{worker_name}] 🔄 Recycling page "
+                    f"after {cycle_count} cycles to free memory"
+                )
+                page = await bm.create_page(target)
+                logger.info(
+                    f"[{worker_name}] ✓ Page recycled successfully"
+                )
+            except Exception as exc:
+                logger.warning(
+                    f"[{worker_name}] Page recycle failed: {exc} "
+                    f"— will force full restart"
+                )
+                page = None
                 continue
 
         # ── Scrape cycle ──────────────────────────────────────────
@@ -441,6 +506,7 @@ async def _worker(
                 )
                 consecutive_failures = 0
                 last_success_time = time.monotonic()
+                cycle_count += 1
             else:
                 logger.warning(
                     f"[{worker_name}] Extracted '{raw_text}' "
@@ -466,6 +532,7 @@ async def _worker(
                     f"will relaunch on next cycle"
                 )
                 page = None  # force full restart on next iteration
+                cycle_count = 0
             else:
                 logger.error(
                     f"[{worker_name}] Scrape error "

@@ -25,7 +25,7 @@ REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
 # ---------------------------------------------------------------------------
 # Scraping tuning
 # ---------------------------------------------------------------------------
-SCRAPE_INTERVAL_SECONDS: int = int(os.getenv("SCRAPE_INTERVAL_SECONDS", "3"))
+SCRAPE_INTERVAL_SECONDS: int = int(os.getenv("SCRAPE_INTERVAL_SECONDS", "10"))
 SCRAPE_TIMEOUT_MS: int = int(os.getenv("SCRAPE_TIMEOUT_MS", "30000"))
 RECOVERY_DELAY_SECONDS: int = int(os.getenv("RECOVERY_DELAY_SECONDS", "5"))
 
