@@ -1,7 +1,7 @@
 """
-Metal Price Real-time API System dengan 6 Persistent Tabs
-- 5 tab untuk metal prices (Gold, Silver, Platinum, Palladium, Copper)
-- 1 tab untuk USDIDR exchange rate (persistent)
+Metal Price Real-time API System dengan 4 Persistent Tabs
+- 3 tab untuk metal prices dari Kitco (Gold, Silver, Copper)
+- 1 tab untuk USDIDR exchange rate dari TradingView (persistent)
 - Auto-recovery untuk crashed tabs
 - Parallel extraction dengan thread pool
 """
@@ -33,15 +33,17 @@ logging.basicConfig(level=logging.INFO)
 
 # Konstanta
 TROY_OUNCE_TO_GRAM = 31.1034768
+POUND_TO_GRAM = 453.592
 
-# TradingView URLs
-TRADINGVIEW_SYMBOLS = {
-    "gold": {"symbol": "XAUUSD", "url": "https://www.tradingview.com/symbols/XAUUSD/", "name": "Gold"},
-    "silver": {"symbol": "XAGUSD", "url": "https://www.tradingview.com/symbols/XAGUSD/", "name": "Silver"},
-    "platinum": {"symbol": "XPTUSD", "url": "https://www.tradingview.com/symbols/XPTUSD/", "name": "Platinum"},
-    "palladium": {"symbol": "XPDUSD", "url": "https://www.tradingview.com/symbols/XPDUSD/", "name": "Palladium"},
-    "copper": {"symbol": "XCUUSD", "url": "https://www.tradingview.com/symbols/XCUUSD/", "name": "Copper"}
+# Kitco URLs (gold & silver per troy ounce, copper per lb)
+KITCO_SOURCES = {
+    "gold": {"url": "https://www.kitco.com/charts/gold", "name": "Gold", "unit": "tryounce"},
+    "silver": {"url": "https://www.kitco.com/charts/silver", "name": "Silver", "unit": "tryounce"},
+    "copper": {"url": "https://www.kitco.com/price/base-metals/copper", "name": "Copper", "unit": "lb"}
 }
+
+# Kitco wait selector (Bid price h3)
+KITCO_WAIT_SELECTOR = "h3.font-mulish"
 
 USDIDR_CONFIG = {
     "symbol": "USDIDR",
@@ -49,15 +51,25 @@ USDIDR_CONFIG = {
     "name": "USD to IDR"
 }
 
+# TradingView wait selector (untuk USDIDR)
+TRADINGVIEW_WAIT_SELECTOR = "span[data-qa-id='symbol-last-value']"
+
+def _get_wait_selector(key: str) -> str:
+    """Return CSS selector for waiting based on source"""
+    if key == "usdidr":
+        return TRADINGVIEW_WAIT_SELECTOR
+    return KITCO_WAIT_SELECTOR
+
 # Data models
 class MetalPrice(BaseModel):
     metal: str
     price_usd: float
+    price_unit: str  # "per troy ounce" or "per lb"
     price_per_gram_usd: float
     price_per_gram_idr: Optional[float] = None
     currency: str = "USD"
     timestamp: str
-    source: str = "TradingView"
+    source: str = "Kitco"
 
 class MetalPriceResponse(BaseModel):
     status: str
@@ -68,7 +80,8 @@ class MetalPriceResponse(BaseModel):
 class MetalPriceWithGram(BaseModel):
     metal: str
     gram: float
-    price_per_troy_ounce_usd: float
+    price_per_unit_usd: float
+    price_unit: str  # "per troy ounce" or "per lb"
     price_per_gram_usd: float
     total_price_usd: float
     price_per_gram_idr: Optional[float] = None
@@ -76,15 +89,13 @@ class MetalPriceWithGram(BaseModel):
     currency: str
     exchange_rate: Optional[float] = None
     timestamp: str
-    source: str = "TradingView"
+    source: str = "Kitco"
     conversion_info: dict
 
 # Global state
 price_cache: Dict = {
     "gold": None,
     "silver": None,
-    "platinum": None,
-    "palladium": None,
     "copper": None,
     "usdidr": None,
     "last_update": None,
@@ -92,11 +103,11 @@ price_cache: Dict = {
     "tab_status": {}
 }
 
-thread_pool = ThreadPoolExecutor(max_workers=6)  # 5 metals + 1 USDIDR
+thread_pool = ThreadPoolExecutor(max_workers=4)  # 3 metals + 1 USDIDR
 cache_lock = threading.RLock()
 
 class MultiTabBrowserScraper:
-    """Multi-tab browser scraper dengan 6 persistent tabs"""
+    """Multi-tab browser scraper dengan 4 persistent tabs"""
     
     def __init__(self):
         self.driver = None
@@ -129,9 +140,9 @@ class MultiTabBrowserScraper:
         return chrome_options
     
     def initialize(self):
-        """Initialize browser dengan 6 persistent tabs (5 metals + 1 USDIDR)"""
+        """Initialize browser dengan 4 persistent tabs (3 metals + 1 USDIDR)"""
         logger.info("=" * 60)
-        logger.info("Initializing Browser with 6 Persistent Tabs...")
+        logger.info("Initializing Browser with 4 Persistent Tabs...")
         logger.info("=" * 60)
         
         try:
@@ -142,11 +153,11 @@ class MultiTabBrowserScraper:
             self.driver.set_page_load_timeout(30)
             self.driver.implicitly_wait(5)
             
-            # List semua tab yang akan dibuat: 5 metals + 1 USDIDR
+            # List semua tab yang akan dibuat: 3 metals + 1 USDIDR
             all_tabs_config = []
             
-            # Tambahkan metals
-            for metal, config in TRADINGVIEW_SYMBOLS.items():
+            # Tambahkan metals dari Kitco
+            for metal, config in KITCO_SOURCES.items():
                 all_tabs_config.append({
                     "key": metal,
                     "url": config['url'],
@@ -160,6 +171,8 @@ class MultiTabBrowserScraper:
                 "name": USDIDR_CONFIG['name']
             })
             
+            total_tabs = len(all_tabs_config)
+            
             # Buat semua tab
             for idx, tab_config in enumerate(all_tabs_config):
                 try:
@@ -170,23 +183,24 @@ class MultiTabBrowserScraper:
                     if idx == 0:
                         # Tab pertama (sudah terbuka)
                         self.tabs[key] = self.driver.current_window_handle
-                        logger.info(f"Tab {idx+1}/6: Using existing tab for {name.upper()}")
+                        logger.info(f"Tab {idx+1}/{total_tabs}: Using existing tab for {name.upper()}")
                     else:
                         # Buat tab baru
                         self.driver.execute_script("window.open('');")
                         self.driver.switch_to.window(self.driver.window_handles[-1])
                         self.tabs[key] = self.driver.current_window_handle
-                        logger.info(f"Tab {idx+1}/6: Created new tab for {name.upper()}")
+                        logger.info(f"Tab {idx+1}/{total_tabs}: Created new tab for {name.upper()}")
                     
                     # Load URL
                     try:
                         logger.info(f"Loading {name}...")
                         self.driver.get(url)
                         
-                        # Wait untuk page load
+                        # Wait untuk page load (selector berbeda per source)
+                        wait_selector = _get_wait_selector(key)
                         wait = WebDriverWait(self.driver, 20)
                         wait.until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
+                            EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector))
                         )
                         
                         # Extra wait untuk rendering
@@ -210,9 +224,9 @@ class MultiTabBrowserScraper:
                         price_cache["tab_status"][key] = "error"
             
             logger.info("=" * 60)
-            logger.info(f"✓ Browser initialization complete - 6 tabs active")
-            logger.info(f"  Metals: {list(TRADINGVIEW_SYMBOLS.keys())}")
-            logger.info(f"  Currency: USDIDR")
+            logger.info(f"✓ Browser initialization complete - {total_tabs} tabs active")
+            logger.info(f"  Metals (Kitco): {list(KITCO_SOURCES.keys())}")
+            logger.info(f"  Currency (TradingView): USDIDR")
             logger.info("=" * 60)
             
             return True
@@ -245,8 +259,8 @@ class MultiTabBrowserScraper:
                     url = USDIDR_CONFIG['url']
                     name = USDIDR_CONFIG['name']
                 else:
-                    url = TRADINGVIEW_SYMBOLS[key]['url']
-                    name = TRADINGVIEW_SYMBOLS[key]['name']
+                    url = KITCO_SOURCES[key]['url']
+                    name = KITCO_SOURCES[key]['name']
                 
                 # Close tab yang rusak
                 if key in self.tabs:
@@ -266,10 +280,11 @@ class MultiTabBrowserScraper:
                 # Load URL
                 self.driver.get(url)
                 
-                # Wait untuk page render
+                # Wait untuk page render (selector berbeda per source)
+                wait_selector = _get_wait_selector(key)
                 wait = WebDriverWait(self.driver, 15)
                 wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']"))
+                    EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector))
                 )
                 
                 with cache_lock:
@@ -316,19 +331,20 @@ class MultiTabBrowserScraper:
                         logger.error(f"Refresh failed for {key}: {e}")
                         return self._recover_tab(key) and self.load_and_save_html(key, refresh)
                 
-                # Wait untuk element muncul
+                # Wait untuk element muncul (selector berbeda per source)
                 try:
                     wait = WebDriverWait(self.driver, 10)
+                    wait_selector = _get_wait_selector(key)
                     
                     # Wait element visible
                     wait.until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector)),
                         message=f"Element not found for {key}"
                     )
                     
                     # Ensure ada text
                     wait.until(
-                        lambda d: len(d.find_element(By.CSS_SELECTOR, "span[data-qa-id='symbol-last-value']").text.strip()) > 0,
+                        lambda d: len(d.find_element(By.CSS_SELECTOR, wait_selector).text.strip()) > 0,
                         message=f"No text for {key}"
                     )
                     
@@ -382,7 +398,7 @@ class MultiTabBrowserScraper:
         results = {}
         
         # Refresh metal tabs
-        for metal in TRADINGVIEW_SYMBOLS.keys():
+        for metal in KITCO_SOURCES.keys():
             try:
                 success = self.load_and_save_html(metal, refresh=refresh)
                 results[metal] = success
@@ -426,7 +442,7 @@ def extract_price_from_html(key: str) -> Optional[float]:
     """Extract harga/rate dari HTML yang sudah disimpan
     
     Args:
-        key: 'gold', 'silver', etc, atau 'usdidr'
+        key: 'gold', 'silver', 'copper', atau 'usdidr'
     """
     try:
         with cache_lock:
@@ -437,42 +453,67 @@ def extract_price_from_html(key: str) -> Optional[float]:
             return None
         
         soup = BeautifulSoup(html, 'lxml')
-        symbol_last_value = soup.find('span', attrs={'data-qa-id': 'symbol-last-value'})
         
-        if symbol_last_value:
-            text_content = symbol_last_value.get_text(strip=True)
-            logger.debug(f"Raw text for {key}: {text_content}")
+        if key == "usdidr":
+            # TradingView selector untuk USDIDR
+            symbol_last_value = soup.find('span', attrs={'data-qa-id': 'symbol-last-value'})
             
-            # Parse price/rate
-            price_str = text_content.replace(',', '')
-            
-            # Handle formatting untuk metal prices (2 decimal)
-            if len(price_str) > 3 and '.' not in price_str and key != "usdidr":
-                price_str = price_str[:-2] + '.' + price_str[-2:]
-            
-            try:
-                value = float(price_str)
+            if symbol_last_value:
+                text_content = symbol_last_value.get_text(strip=True)
+                logger.debug(f"Raw text for {key}: {text_content}")
                 
-                # Validasi range
-                if key == "usdidr":
-                    # USDIDR range: 10,000 - 20,000
+                price_str = text_content.replace(',', '')
+                
+                # Handle formatting untuk USDIDR
+                if len(price_str) > 3 and '.' not in price_str:
+                    price_str = price_str[:-2] + '.' + price_str[-2:]
+                
+                try:
+                    value = float(price_str)
                     if 10000 < value < 20000:
                         logger.info(f"✓ Extracted {key.upper()}: {value:,.2f}")
                         return value
                     else:
                         logger.warning(f"USDIDR {value} outside valid range")
-                else:
-                    # Metal price range: 1 - 10,000
-                    if 1 < value < 10000:
-                        logger.info(f"✓ Extracted {key.upper()}: ${value}")
-                        return value
-                    else:
-                        logger.warning(f"Price {value} outside valid range for {key}")
-                        
-            except ValueError as e:
-                logger.error(f"Could not parse value {price_str}: {e}")
+                except ValueError as e:
+                    logger.error(f"Could not parse value {price_str}: {e}")
+            else:
+                logger.warning(f"Could not find price element for {key}")
         else:
-            logger.warning(f"Could not find price element for {key}")
+            # Kitco selector untuk metals - Bid price h3
+            # Cari h3 dengan class yang mengandung font-mulish, text-4xl, font-bold
+            bid_h3 = soup.find('h3', class_=lambda c: c and 'font-mulish' in c and 'text-4xl' in c and 'font-bold' in c)
+            
+            if bid_h3:
+                text_content = bid_h3.get_text(strip=True)
+                logger.debug(f"Raw text for {key}: {text_content}")
+                
+                # Parse price (format: 5,156.30 atau 5.7773)
+                price_str = text_content.replace(',', '')
+                
+                try:
+                    value = float(price_str)
+                    
+                    # Validasi range berdasarkan metal
+                    if key == "copper":
+                        # Copper price per lb: 0.1 - 20
+                        if 0.1 < value < 20:
+                            logger.info(f"✓ Extracted {key.upper()}: ${value}/lb")
+                            return value
+                        else:
+                            logger.warning(f"Copper price {value} outside valid range")
+                    else:
+                        # Gold/Silver price per troy ounce: 1 - 100,000
+                        if 1 < value < 100000:
+                            logger.info(f"✓ Extracted {key.upper()}: ${value}/oz")
+                            return value
+                        else:
+                            logger.warning(f"Price {value} outside valid range for {key}")
+                            
+                except ValueError as e:
+                    logger.error(f"Could not parse value {price_str}: {e}")
+            else:
+                logger.warning(f"Could not find Kitco bid price element for {key}")
         
         return None
         
@@ -492,7 +533,7 @@ def extract_all_prices_parallel(include_usdidr: bool = True) -> Dict[str, float]
     futures = {}
     
     # Submit metal extraction tasks
-    for metal in TRADINGVIEW_SYMBOLS.keys():
+    for metal in KITCO_SOURCES.keys():
         future = thread_pool.submit(extract_price_from_html, metal)
         futures[metal] = future
     
@@ -511,7 +552,7 @@ def extract_all_prices_parallel(include_usdidr: bool = True) -> Dict[str, float]
                     if key == "usdidr":
                         price_cache["usdidr"] = {"rate": value, "source": "TradingView"}
                     else:
-                        price_cache[key] = {"price": value, "source": "TradingView"}
+                        price_cache[key] = {"price": value, "source": "Kitco"}
         except Exception as e:
             logger.error(f"Error getting value for {key}: {e}")
     
@@ -532,7 +573,7 @@ async def refresh_prices_on_request(include_usdidr: bool = True):
     refresh_results = browser_scraper.refresh_all_tabs(refresh=False, include_usdidr=include_usdidr)
     
     success_count = sum(1 for s in refresh_results.values() if s)
-    total_tabs = 6 if include_usdidr else 5
+    total_tabs = 4 if include_usdidr else 3
     logger.info(f"Successfully extracted {success_count}/{total_tabs} tabs")
     
     # Extract prices/rates secara paralel
@@ -557,14 +598,14 @@ async def manual_refresh_prices():
         return False
     
     logger.info("=" * 60)
-    logger.info("Manual refresh - refreshing all 6 tabs...")
+    logger.info("Manual refresh - refreshing all 4 tabs...")
     logger.info("=" * 60)
     
     # Refresh semua tab dengan auto-recovery
     refresh_results = browser_scraper.refresh_all_tabs(refresh=True, include_usdidr=True)
     
     success_count = sum(1 for s in refresh_results.values() if s)
-    logger.info(f"Successfully refreshed {success_count}/6 tabs")
+    logger.info(f"Successfully refreshed {success_count}/4 tabs")
     
     # Extract prices/rates secara paralel
     values_found = extract_all_prices_parallel(include_usdidr=True)
@@ -606,9 +647,9 @@ async def lifespan(app: FastAPI):
     logger.info("Shutdown completed")
 
 app = FastAPI(
-    title="Metal Price API with 6 Persistent Tabs",
-    description="Real-time Metal Prices + USDIDR Exchange Rate (6 Active Tabs)",
-    version="3.1.0",
+    title="Metal Price API - Kitco + TradingView",
+    description="Real-time Metal Prices from Kitco + USDIDR Exchange Rate from TradingView (4 Active Tabs)",
+    version="4.0.0",
     lifespan=lifespan
 )
 
@@ -623,20 +664,24 @@ app.add_middleware(
 @app.get("/", tags=["Info"])
 async def root():
     return {
-        "name": "Metal Price API with 6 Persistent Tabs",
-        "version": "3.1.0",
-        "source": "TradingView Multi-Tab Scraping (Selenium)",
+        "name": "Metal Price API - Kitco + TradingView",
+        "version": "4.0.0",
+        "source": {
+            "metals": "Kitco (Selenium Scraping)",
+            "currency": "TradingView (Selenium Scraping)"
+        },
         "features": [
-            "6 persistent tabs (5 metals + 1 USDIDR)",
+            "4 persistent tabs (3 metals + 1 USDIDR)",
             "Parallel extraction dengan thread pool",
             "Auto-recovery untuk crashed tabs",
             "Real-time exchange rate USDIDR",
-            "Konversi otomatis USD ke IDR"
+            "Konversi otomatis USD ke IDR",
+            "Copper per lb → gram conversion"
         ],
         "tabs": {
-            "metals": list(TRADINGVIEW_SYMBOLS.keys()),
+            "metals": list(KITCO_SOURCES.keys()),
             "currency": "USDIDR",
-            "total": 6
+            "total": 4
         },
         "endpoints": {
             "GET /": "This endpoint",
@@ -645,6 +690,7 @@ async def root():
             "GET /health": "Health check",
             "POST /refresh": "Manual refresh all tabs",
             "GET /symbols": "Get list of symbols",
+            "GET /exchange-rate": "Get USDIDR exchange rate",
             "GET /debug/cache": "Debug cache and tab status"
         }
     }
@@ -653,7 +699,7 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     with cache_lock:
-        metal_count = len([p for p in price_cache if p in TRADINGVIEW_SYMBOLS and price_cache[p]])
+        metal_count = len([p for p in price_cache if p in KITCO_SOURCES and price_cache[p]])
         usdidr_rate = price_cache.get("usdidr", {}).get("rate")
         tab_status = price_cache.get("tab_status", {})
     
@@ -663,10 +709,10 @@ async def health_check():
         "status": "healthy" if metal_count > 0 else "initializing",
         "last_update": price_cache.get("last_update"),
         "cached_metals": metal_count,
-        "total_metals": len(TRADINGVIEW_SYMBOLS),
+        "total_metals": len(KITCO_SOURCES),
         "usdidr_rate": usdidr_rate,
         "active_tabs": active_tabs,
-        "total_tabs": 6,
+        "total_tabs": 4,
         "tab_status": tab_status,
         "browser_active": browser_scraper is not None
     }
@@ -696,13 +742,21 @@ async def get_all_prices():
             usdidr_rate = price_cache["usdidr"].get("rate")
         
         # Build metal prices
-        metals = list(TRADINGVIEW_SYMBOLS.keys())
+        metals = list(KITCO_SOURCES.keys())
         prices = []
         
         for metal in metals:
             if price_cache.get(metal):
-                price_per_troy_ounce = price_cache[metal]["price"]
-                price_per_gram_usd = price_per_troy_ounce / TROY_OUNCE_TO_GRAM
+                raw_price = price_cache[metal]["price"]
+                metal_config = KITCO_SOURCES[metal]
+                
+                # Konversi ke per gram tergantung unit
+                if metal_config["unit"] == "lb":
+                    price_per_gram_usd = raw_price / POUND_TO_GRAM
+                    price_unit = "per lb"
+                else:
+                    price_per_gram_usd = raw_price / TROY_OUNCE_TO_GRAM
+                    price_unit = "per troy ounce"
                 
                 # Hitung harga per gram IDR jika ada rate
                 price_per_gram_idr = None
@@ -712,12 +766,13 @@ async def get_all_prices():
                 prices.append(
                     MetalPrice(
                         metal=metal.upper(),
-                        price_usd=price_per_troy_ounce,
+                        price_usd=raw_price,
+                        price_unit=price_unit,
                         price_per_gram_usd=round(price_per_gram_usd, 4),
                         price_per_gram_idr=round(price_per_gram_idr, 2) if price_per_gram_idr else None,
                         currency="USD/IDR" if usdidr_rate else "USD",
                         timestamp=price_cache["last_update"],
-                        source="TradingView"
+                        source="Kitco"
                     )
                 )
     
@@ -741,12 +796,12 @@ async def get_metal_price(
     Get harga metal dengan konversi gram dan mata uang
     
     Parameters:
-    - **metal**: Jenis metal (gold, silver, platinum, palladium, copper)
+    - **metal**: Jenis metal (gold, silver, copper)
     - **gram**: Berat dalam gram (wajib, > 0)
     - **currency**: Mata uang output (USD atau IDR, default: USD)
     
     Returns:
-    - Harga per troy ounce dan per gram
+    - Harga per unit (troy ounce atau lb) dan per gram
     - Total harga untuk gram yang diminta
     - Jika currency=IDR: nilai dalam IDR dengan exchange rate terbaru
     """
@@ -754,10 +809,10 @@ async def get_metal_price(
     metal = metal.lower()
     currency = currency.upper()
     
-    if metal not in TRADINGVIEW_SYMBOLS:
+    if metal not in KITCO_SOURCES:
         raise HTTPException(
             status_code=400,
-            detail=f"Metal tidak valid. Gunakan: {', '.join(TRADINGVIEW_SYMBOLS.keys())}"
+            detail=f"Metal tidak valid. Gunakan: {', '.join(KITCO_SOURCES.keys())}"
         )
     
     if gram <= 0:
@@ -771,23 +826,35 @@ async def get_metal_price(
         if not price_cache.get(metal):
             raise HTTPException(status_code=503, detail=f"{metal.upper()} data tidak tersedia")
         
-        price_per_troy_ounce = price_cache[metal]["price"]
+        raw_price = price_cache[metal]["price"]
     
-    # Kalkulasi USD
-    price_per_gram_usd = price_per_troy_ounce / TROY_OUNCE_TO_GRAM
+    metal_config = KITCO_SOURCES[metal]
+    
+    # Kalkulasi USD berdasarkan unit
+    if metal_config["unit"] == "lb":
+        price_per_gram_usd = raw_price / POUND_TO_GRAM
+        price_unit = "per lb"
+        unit_factor_label = f"1 lb = {POUND_TO_GRAM} gram"
+    else:
+        price_per_gram_usd = raw_price / TROY_OUNCE_TO_GRAM
+        price_unit = "per troy ounce"
+        unit_factor_label = f"1 troy ounce = {TROY_OUNCE_TO_GRAM} gram"
+    
     total_price_usd = price_per_gram_usd * gram
     
     # Response default (USD)
     response_data = {
         "metal": metal.upper(),
         "gram": gram,
-        "price_per_troy_ounce_usd": round(price_per_troy_ounce, 2),
+        "price_per_unit_usd": round(raw_price, 4),
+        "price_unit": price_unit,
         "price_per_gram_usd": round(price_per_gram_usd, 4),
         "total_price_usd": round(total_price_usd, 2),
         "currency": "USD",
         "timestamp": price_cache.get("last_update", ""),
+        "source": "Kitco",
         "conversion_info": {
-            "troy_ounce_to_gram": TROY_OUNCE_TO_GRAM,
+            "unit_conversion": unit_factor_label,
             "calculation_usd": f"{gram}g × ${round(price_per_gram_usd, 4)}/g = ${round(total_price_usd, 2)}"
         }
     }
@@ -834,11 +901,11 @@ async def manual_refresh():
     
     return {
         "status": "success" if success else "partial",
-        "message": "Manual refresh completed for all 6 tabs",
+        "message": "Manual refresh completed for all 4 tabs",
         "last_update": price_cache.get("last_update"),
         "tab_status": tab_status,
         "usdidr_rate": round(usdidr_rate, 2) if usdidr_rate else None,
-        "total_tabs": 6
+        "total_tabs": 4
     }
 
 @app.get("/symbols", tags=["Info"])
@@ -847,14 +914,14 @@ async def get_symbols():
     return {
         "metals": {
             metal: data['url'] 
-            for metal, data in TRADINGVIEW_SYMBOLS.items()
+            for metal, data in KITCO_SOURCES.items()
         },
         "currency": {
             "usdidr": USDIDR_CONFIG['url']
         },
-        "description": "Metal symbols dan USDIDR dari TradingView",
-        "scraping_method": "Multi-Tab Selenium (6 Persistent Tabs) + Thread Pool Extraction + Auto-Recovery",
-        "total_tabs": 6
+        "description": "Metal prices dari Kitco, USDIDR dari TradingView",
+        "scraping_method": "Multi-Tab Selenium (4 Persistent Tabs) + Thread Pool Extraction + Auto-Recovery",
+        "total_tabs": 4
     }
 
 @app.get("/debug/cache", tags=["Debug"])
@@ -863,11 +930,11 @@ async def debug_cache():
     with cache_lock:
         cached_metals = {
             metal: price_cache.get(metal, {}).get("price") 
-            for metal in TRADINGVIEW_SYMBOLS.keys()
+            for metal in KITCO_SOURCES.keys()
         }
         html_size = {
             key: len(price_cache.get("html_cache", {}).get(key, ""))
-            for key in list(TRADINGVIEW_SYMBOLS.keys()) + ["usdidr"]
+            for key in list(KITCO_SOURCES.keys()) + ["usdidr"]
         }
         tab_status = price_cache.get("tab_status", {})
         usdidr_rate = price_cache.get("usdidr", {}).get("rate")
@@ -881,7 +948,7 @@ async def debug_cache():
         "browser_active": browser_scraper is not None,
         "total_cached_metals": len([p for p in cached_metals.values() if p]),
         "active_tabs": sum(1 for s in tab_status.values() if s == "active"),
-        "total_tabs": 6
+        "total_tabs": 4
     }
 
 @app.get("/exchange-rate", tags=["Currency"])
