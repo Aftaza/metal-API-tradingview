@@ -1,0 +1,19 @@
+# ──────────────────────────────────────────────────────────────
+# Dockerfile.scraper-unified — Single Chromium for ALL targets
+# Optimized for low-memory VPS (1 core / 1GB RAM)
+# ──────────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/playwright/python:v1.49.1-noble
+
+WORKDIR /app
+
+# Python deps
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+  pip install --no-cache-dir \
+  "redis[hiredis]==5.2.1" \
+  playwright==1.49.1
+
+# Application code
+COPY config.py scraper_unified.py ./
+
+CMD ["python", "-u", "scraper_unified.py"]

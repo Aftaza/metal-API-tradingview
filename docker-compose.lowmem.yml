@@ -1,0 +1,121 @@
+# ──────────────────────────────────────────────────────────────
+#  docker-compose.lowmem.yml — Optimized for VPS 1 Core / 1GB RAM
+#
+#  Key differences from docker-compose.yml:
+#    • 4 separate scraper containers → 1 unified scraper
+#    • Total memory budget: ~700-800MB (fits in 1GB with swap)
+#    • Single Chromium instance scrapes all targets sequentially
+#    • API runs with 1 uvicorn worker instead of 2
+#    • Redis maxmemory reduced to 32MB
+#
+#  Services:
+#    nginx           →  Reverse proxy (public port 80)
+#    redis           →  In-memory data store (no persistence)
+#    api             →  FastAPI REST endpoint (reads from Redis)
+#    scraper         →  Unified scraper (all targets, 1 browser)
+# ──────────────────────────────────────────────────────────────
+
+services:
+  # ── Nginx: reverse proxy + rate limiting ─────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: metal-nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+    networks:
+      - metal-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 32M
+
+  # ── Redis: pure in-memory, minimal footprint ─────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: metal-redis
+    command: >
+      redis-server
+        --appendonly no
+        --save ""
+        --maxmemory 32mb
+        --maxmemory-policy allkeys-lru
+        --tcp-backlog 64
+        --timeout 0
+        --tcp-keepalive 60
+    expose:
+      - "6379"
+    networks:
+      - metal-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 48M
+
+  # ── FastAPI: single worker for low memory ────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: metal-api-v2
+    expose:
+      - "8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - metal-network
+    restart: unless-stopped
+    # Override CMD to use 1 worker instead of 2
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+
+  # ── Unified Scraper: ALL targets in ONE browser ──────────────
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper-unified
+    container_name: metal-scraper-unified
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-15}
+      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - metal-network
+    restart: unless-stopped
+    shm_size: "256mb"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+networks:
+  metal-network:
+    driver: bridge
