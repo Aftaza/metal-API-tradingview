@@ -1,21 +1,35 @@
 # ──────────────────────────────────────────────────────────────
 # Dockerfile.scraper — Playwright + Chromium scraper daemon
+#
+# Uses Microsoft's official Playwright image which ships with
+# Chromium and all OS dependencies pre-installed.
 # ──────────────────────────────────────────────────────────────
-# Use Microsoft's official Playwright image which comes with
-# Chromium + all OS dependencies pre-installed. This avoids the
-# ttf-unifont / ttf-ubuntu-font-family package errors on Debian Trixie.
 FROM mcr.microsoft.com/playwright/python:v1.49.1-noble
+
+# Prevent Python from writing .pyc files and buffer stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Create non-root user (Playwright image does not include one by default)
+RUN groupadd -r scraper && useradd -r -g scraper -m -d /home/scraper scraper
 
 WORKDIR /app
 
-# Python deps
+# ── Python deps ──────────────────────────────────────────────
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-  pip install --no-cache-dir \
-  "redis[hiredis]==5.2.1" \
-  playwright==1.49.1
+    pip install --no-cache-dir \
+    "redis[hiredis]==5.2.1" \
+    "playwright==1.49.1"
 
-# Application code
+# ── Application code ─────────────────────────────────────────
 COPY config.py scraper_daemon.py ./
+
+# ── Permissions ──────────────────────────────────────────────
+RUN chown -R scraper:scraper /app
+USER scraper
+
+# Scraper daemon has no HTTP port — no EXPOSE or HEALTHCHECK needed.
+# Container health is inferred from Redis data freshness (via API /health).
 
 CMD ["python", "-u", "scraper_daemon.py"]

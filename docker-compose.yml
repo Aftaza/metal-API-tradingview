@@ -1,11 +1,12 @@
 # ──────────────────────────────────────────────────────────────
-#  docker-compose.yml — V2 Pure Stream Processing Architecture
+#  docker-compose.yml — V2.1 Pure Stream Processing Architecture
 #
 #  Services:
 #    nginx           →  Reverse proxy (public port 80)
 #    redis           →  In-memory data store (no persistence)
 #    api             →  FastAPI REST endpoint (reads from Redis)
 #    scraper-daemon  →  4 async Playwright workers (writes to Redis)
+#                       3 metals (Gold, Silver, Copper) + USDIDR
 # ──────────────────────────────────────────────────────────────
 
 services:
@@ -69,6 +70,8 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - LOG_LEVEL=INFO
+      # Set to comma-separated origins for production, e.g. https://myapp.com
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
     depends_on:
       redis:
         condition: service_healthy
@@ -85,6 +88,7 @@ services:
           memory: 128M
 
   # ── Scraper Daemon: 4 Playwright workers ────────────────────
+  # Workers: gold, silver, copper, usdidr
   scraper-daemon:
     build:
       context: .
@@ -95,6 +99,9 @@ services:
       - SCRAPE_INTERVAL_SECONDS=5
       - SCRAPE_TIMEOUT_MS=30000
       - RECOVERY_DELAY_SECONDS=5
+      - MAX_BACKOFF_SECONDS=60
+      - REDIS_KEY_TTL_SECONDS=60
+      - RENDER_SETTLE_MS=600
       - LOG_LEVEL=INFO
     depends_on:
       redis:

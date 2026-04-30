@@ -27,7 +27,7 @@ const exchangeRateLatency = new Trend("exchange_rate_latency", true);
 const totalRequests = new Counter("total_requests");
 
 // ── Configuration ───────────────────────────────────────────────────
-const BASE_URL = __ENV.BASE_URL || "http://54.179.250.48";
+const BASE_URL = __ENV.BASE_URL || "http://localhost";
 const METALS = ["gold", "silver", "copper"];
 const GRAMS = [1, 5, 10, 25, 50, 100, 500, 1000];
 
