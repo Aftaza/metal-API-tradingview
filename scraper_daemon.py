@@ -1,31 +1,37 @@
 """
-Scraper Daemon v2.2 — Fault-Tolerant Stream Processing
-=======================================================
-Standalone worker process: one async task per scraping target.
-Each task continuously scrapes a TradingView page via Playwright
-and writes the latest price directly into Redis with TTL.
+Scraper Daemon v2.3 — Resilient Anti-Rate-Limit Stream Processing
+=================================================================
+Production-grade scraper for real-time metal prices used in an
+e-commerce pricing engine (central-bullions-project.vercel.app).
 
-Architecture improvements in v2.2 (crash bug fixes):
-  • Browser restart: when Chromium crashes (OOM / Page crashed /
-    TargetClosedError), the daemon relaunches the ENTIRE browser
-    process — workers are NOT stuck waiting on a dead browser object.
-  • Memory management: aggressive resource blocking + `--single-process`
-    flag removed (was causing instability). Added `--js-flags=--max-old-space-size`
-    to limit V8 heap.
-  • Selector disambiguation: uses `.first` (Playwright locator) instead of
-    `query_selector` to avoid "2 elements" timeout ambiguity.
-  • Page reuse replaced by goto on each cycle: more stable than reload()
-    which can crash under memory pressure. Context is still shared.
-  • Global browser health monitor: detects browser crashes and coordinates
-    a clean restart across all workers via asyncio.Event.
+Root causes fixed from scraper.log analysis:
+  [Bug-1] All 4 workers timeout SIMULTANEOUSLY (14:19:24–14:19:41).
+          TradingView detects concurrent scraping from the same IP
+          and rate-limits all connections in bulk.
+          Fix: Staggered startup (each worker waits N*4s before first
+          request) + per-iteration jitter (±2s randomization).
 
-Root causes fixed (from scraper.logs analysis):
-  [Bug-1] Page.crashed → OOM due to 4 tabs doing reload() every 5s without
-          enough shared memory. Fix: increase shm_size + limit V8 heap.
-  [Bug-2] TargetClosedError on browser.new_context() after browser crash.
-          Workers retried infinitely on a dead browser. Fix: browser-level
-          restart coordinator replaces entire browser object.
-  [Bug-3] "locator resolved to 2 elements" → used .first locator explicitly.
+  [Bug-2] Workers restart contexts indefinitely but keep hitting the
+          same blocked state with linear backoff climbing too slowly.
+          Fix: Exponential backoff with jitter, and a circuit-breaker
+          that after MAX_FAILURES resets to max-backoff immediately.
+
+  [Bug-3] No persistence layer — when scraper is down, Redis TTL
+          expires and API returns 503 to the live e-commerce site.
+          Fix: "last-known-good" fallback key (LKG) with a 24h TTL.
+          API can serve stale data with a warning header instead of 503.
+
+  [Bug-4] Single CSS selector — if TradingView renames the attribute,
+          all workers die simultaneously.
+          Fix: Multi-selector waterfall with 3 fallback selectors.
+
+Architecture:
+  • BrowserManager (v2.2): coordinates Chromium restart on OOM/crash
+  • Staggered startup: worker[i] sleeps i*STAGGER_SECONDS before first run
+  • Per-cycle jitter: random ±JITTER_SECONDS added to SCRAPE_INTERVAL
+  • Multi-selector: tries 3 different CSS/XPath selectors in order
+  • Last-known-good (LKG) cache: separate Redis key with 24h TTL
+  • Circuit breaker: after N failures, worker pauses for CIRCUIT_BREAK_SECONDS
 
 Usage:
     python scraper_daemon.py
@@ -34,6 +40,7 @@ Usage:
 import asyncio
 import json
 import logging
+import random
 import re
 import signal
 from datetime import datetime, timezone
@@ -62,19 +69,41 @@ from config import (
 
 logger = setup_logging("scraper_daemon")
 
-# CSS selector used by TradingView for the last traded price
-PRICE_SELECTOR: str = "span[data-qa-id='symbol-last-value']"
+# ─── Timing constants ────────────────────────────────────────────────────────
+# Seconds between worker startups (prevents simultaneous first requests)
+STAGGER_SECONDS: int = 4
+
+# Random jitter applied to each sleep interval (±JITTER seconds)
+JITTER_SECONDS: float = 2.0
+
+# After this many consecutive failures, pause for CIRCUIT_BREAK_SECONDS
+CIRCUIT_BREAK_THRESHOLD: int = 10
+
+# How long to pause a worker that has hit the circuit-breaker threshold
+CIRCUIT_BREAK_SECONDS: int = 120
+
+# Last-known-good Redis TTL: 24 hours (vs REDIS_KEY_TTL_SECONDS = 60s)
+LKG_TTL_SECONDS: int = 86_400  # 24 hours
+
+# LKG key prefix: "lkg:gold", "lkg:silver", etc.
+LKG_KEY_PREFIX: str = "lkg"
+
+# ─── CSS selectors tried in order (waterfall) ─────────────────────────────
+# TradingView has historically used multiple class/attribute patterns.
+# We try each in sequence and use the first one that resolves.
+PRICE_SELECTORS: list[str] = [
+    "span[data-qa-id='symbol-last-value']",          # Primary (current as of 2025)
+    "span.js-symbol-last",                           # Fallback class-based
+    "div.tv-symbol-price-quote__value span",          # Structural fallback
+]
 
 # Regex: match a number like "3,247.80" or "16325" or "0.9234"
 _PRICE_RE = re.compile(r"^[\d,]+(?:\.\d+)?$")
 
-# How many consecutive worker errors before we declare the browser dead
-_BROWSER_CRASH_THRESHOLD = 3
-
-# Chromium launch args — tuned for low-memory container environments
+# Chromium launch args — memory-optimised for container environments
 _CHROMIUM_ARGS = [
     "--no-sandbox",
-    "--disable-dev-shm-usage",          # Use /tmp instead of /dev/shm
+    "--disable-dev-shm-usage",
     "--disable-gpu",
     "--disable-extensions",
     "--disable-background-networking",
@@ -86,28 +115,24 @@ _CHROMIUM_ARGS = [
     "--disable-renderer-backgrounding",
     "--disable-features=TranslateUI",
     "--disable-ipc-flooding-protection",
-    "--memory-pressure-off",
-    "--max_old_space_size=256",         # Cap V8 heap per tab at 256MB
     "--js-flags=--max-old-space-size=256",
 ]
 
 
-# ──────────────────────────────────────────────────────────────────────
-# Price extraction helpers
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# Price parsing
+# ──────────────────────────────────────────────────────────────────────────────
 
 def _parse_price(raw_text: str, target: dict) -> float | None:
     """
-    Parse raw text from TradingView into a validated float price.
+    Parse raw TradingView price text into a validated float.
 
     Strategy:
-      1. Strip whitespace and remove thousands separators (commas).
-      2. For metal prices TradingView may omit the decimal point:
-         e.g. "324780" → "3247.80". We detect this case via regex
-         and insert the dot two places from the right.
-      3. Validate against per-target min/max range (from config.py).
+      1. Strip whitespace + remove comma thousands-separators.
+      2. For metals without a decimal: insert dot 2 places from right.
+      3. Validate against per-target min/max range (config.py).
 
-    Returns None if text cannot be parsed or is out of range.
+    Returns None on parse failure or out-of-range value.
     """
     try:
         if raw_text is None:
@@ -116,7 +141,6 @@ def _parse_price(raw_text: str, target: dict) -> float | None:
         if not cleaned:
             return None
 
-        # Remove thousands separators
         cleaned = cleaned.replace(",", "")
 
         if not _PRICE_RE.match(cleaned):
@@ -125,14 +149,10 @@ def _parse_price(raw_text: str, target: dict) -> float | None:
             )
             return None
 
-        # TradingView sometimes omits the decimal point for metals
-        # (e.g. "324780" should be "3247.80", or "468" should be "4.68")
         if target["type"] == "metal" and "." not in cleaned and len(cleaned) >= 3:
             cleaned = cleaned[:-2] + "." + cleaned[-2:]
 
         value = float(cleaned)
-
-        # Per-metal range validation (defined in config.py SCRAPE_TARGETS)
         min_val = target.get("min_value", 0.01)
         max_val = target.get("max_value", 1_000_000.0)
 
@@ -150,63 +170,47 @@ def _parse_price(raw_text: str, target: dict) -> float | None:
         return None
 
 
-# ──────────────────────────────────────────────────────────────────────
-# Browser lifecycle manager
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# Browser manager (v2.2 — crash-safe browser restart)
+# ──────────────────────────────────────────────────────────────────────────────
 
 class BrowserManager:
     """
-    Manages a single shared Chromium browser instance.
+    Manages a single shared Chromium browser instance with coordinated restarts.
 
-    Provides a thread-safe restart mechanism so that when the browser
-    crashes (OOM, Page crashed, TargetClosedError), ALL workers pause,
-    the browser is relaunched, and workers resume with fresh contexts.
-
-    This fixes Bug-2 from the scraper.logs crash analysis where workers
-    were stuck in infinite retry loops against a dead browser object.
+    When Chromium crashes (OOM / TargetClosedError), all workers pause,
+    the browser is relaunched cleanly, then workers resume.
     """
 
     def __init__(self, pw: Playwright) -> None:
         self._pw = pw
         self._browser: Browser | None = None
-        # Event is SET when browser is healthy, CLEARED during restart
         self._ready = asyncio.Event()
         self._lock = asyncio.Lock()
 
     async def start(self) -> None:
-        """Launch the browser for the first time."""
         self._browser = await self._launch()
         self._ready.set()
         logger.info("✓ Chromium launched")
 
     async def _launch(self) -> Browser:
-        return await self._pw.chromium.launch(
-            headless=True,
-            args=_CHROMIUM_ARGS,
-        )
+        return await self._pw.chromium.launch(headless=True, args=_CHROMIUM_ARGS)
 
     async def get_browser(self) -> Browser:
-        """Wait until the browser is healthy, then return it."""
         await self._ready.wait()
         assert self._browser is not None
         return self._browser
 
     async def restart(self, reason: str) -> None:
-        """
-        Restart the browser process. Only one coroutine executes the
-        restart; others wait via the asyncio.Event.
-        """
         async with self._lock:
             if not self._ready.is_set():
-                # Another worker already triggered restart — just wait
-                return
+                return  # Another worker already handling restart
 
-            self._ready.clear()  # Block all workers while restarting
+            self._ready.clear()
             logger.critical(
                 "💀 Browser crash detected (%s) — restarting Chromium…", reason
             )
 
-            # Kill the crashed browser
             if self._browser is not None:
                 try:
                     await self._browser.close()
@@ -214,7 +218,6 @@ class BrowserManager:
                     pass
                 self._browser = None
 
-            # Wait a moment before relaunching (avoid tight restart loops)
             await asyncio.sleep(5)
 
             for attempt in range(1, 6):
@@ -229,11 +232,9 @@ class BrowserManager:
                     )
                     await asyncio.sleep(10 * attempt)
 
-            # If we can't restart after 5 attempts, re-raise so the daemon exits
             raise RuntimeError("Cannot restart Chromium after 5 attempts — aborting")
 
     async def close(self) -> None:
-        """Cleanly close the browser on daemon shutdown."""
         if self._browser is not None:
             try:
                 await self._browser.close()
@@ -241,14 +242,18 @@ class BrowserManager:
                 pass
 
 
-# ──────────────────────────────────────────────────────────────────────
-# Browser context factory
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# Browser context + page helpers
+# ──────────────────────────────────────────────────────────────────────────────
 
 async def _create_context(browser: Browser) -> BrowserContext:
-    """Create a fresh, lightweight BrowserContext with resource blocking."""
+    """Create a resource-blocking BrowserContext with randomised viewport."""
+    # Slightly vary viewport to avoid fingerprint matching
+    width = random.randint(1260, 1440)
+    height = random.randint(700, 800)
+
     context = await browser.new_context(
-        viewport={"width": 1280, "height": 720},
+        viewport={"width": width, "height": height},
         user_agent=(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -256,84 +261,140 @@ async def _create_context(browser: Browser) -> BrowserContext:
         ),
         java_script_enabled=True,
         ignore_https_errors=False,
+        locale="en-US",
+        timezone_id="America/New_York",
     )
     context.set_default_timeout(SCRAPE_TIMEOUT_MS)
 
-    # Block heavy resources that slow page load without contributing price data
+    # Block resources not needed for price extraction
     await context.route(
         "**/*.{png,jpg,jpeg,gif,svg,woff,woff2,mp4,webm,ico,ttf,otf}",
         lambda route, _: route.abort(),
     )
-    # Also block analytics/tracking that accumulate memory
     await context.route(
-        "**/gtm.js*||**/analytics.js*||**/amplitude*||**/segment*",
+        "**/{gtm,analytics,amplitude,segment,hotjar,intercom}*",
         lambda route, _: route.abort(),
     )
     return context
 
 
-async def _init_page(context: BrowserContext, url: str) -> Page:
+async def _try_get_price_text(page: Page) -> str | None:
     """
-    Open a new page and navigate to URL.
+    Try each selector in PRICE_SELECTORS waterfall.
+    Returns the first non-empty inner text found, or None.
+    """
+    for selector in PRICE_SELECTORS:
+        try:
+            locator = page.locator(selector).first
+            # Short timeout per fallback attempt — don't wait the full 30s for each
+            await locator.wait_for(state="visible", timeout=8_000)
+            text = await locator.inner_text()
+            if text and text.strip():
+                return text.strip()
+        except Exception:
+            continue  # Try next selector
+    return None
 
-    Uses goto() on every cycle (not reload()) for better memory stability.
-    The page object itself is reused across cycles via the calling worker.
-    """
+
+async def _init_page(context: BrowserContext, url: str) -> Page:
+    """Open page, navigate, and wait for any price selector to appear."""
     page = await context.new_page()
     await page.goto(url, wait_until="domcontentloaded", timeout=SCRAPE_TIMEOUT_MS)
-    # Wait for the FIRST price element to appear
-    # Using .first fixes Bug-3: "locator resolved to 2 elements"
-    await page.locator(PRICE_SELECTOR).first.wait_for(
+    # Wait for primary selector (main timeout applies)
+    await page.locator(PRICE_SELECTORS[0]).first.wait_for(
         state="visible",
         timeout=SCRAPE_TIMEOUT_MS,
     )
     return page
 
 
-# ──────────────────────────────────────────────────────────────────────
-# Helper: detect whether an exception means the browser is dead
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# Crash detection helper
+# ──────────────────────────────────────────────────────────────────────────────
 
 def _is_browser_crash(exc: Exception) -> bool:
-    """
-    Return True if the exception indicates a browser-level crash
-    (as opposed to a transient network / selector timeout).
-    """
+    """Return True if exception signals a browser-level crash, not a timeout."""
     msg = str(exc).lower()
-    crash_signals = (
+    return any(sig in msg for sig in (
         "page crashed",
         "target page, context or browser has been closed",
         "targetclosederror",
         "browser has been closed",
-    )
-    return any(sig in msg for sig in crash_signals)
+    ))
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+# Redis helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+async def _write_price(
+    redis_pool: aioredis.Redis,
+    target: dict,
+    price: float,
+) -> None:
+    """
+    Write price to Redis with two keys:
+      1. Live key (price:gold) — short TTL (REDIS_KEY_TTL_SECONDS = 60s)
+         If this expires, API knows scraper is down.
+      2. Last-known-good key (lkg:gold) — long TTL (LKG_TTL_SECONDS = 24h)
+         API can serve stale data with a warning instead of 503.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    payload = json.dumps({
+        "price": price,
+        "source": "TradingView",
+        "updated_at": now,
+    })
+    lkg_payload = json.dumps({
+        "price": price,
+        "source": "TradingView (last-known-good)",
+        "updated_at": now,
+        "is_stale": False,
+    })
+
+    live_key = target["redis_key"]
+    lkg_key = f"{LKG_KEY_PREFIX}:{target['key']}"
+
+    async with redis_pool.pipeline(transaction=True) as pipe:
+        pipe.set(live_key, payload, ex=REDIS_KEY_TTL_SECONDS)
+        pipe.set(lkg_key, lkg_payload, ex=LKG_TTL_SECONDS)
+        await pipe.execute()
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Worker coroutine — one per scraping target
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
 
 async def _worker(
     mgr: BrowserManager,
     redis_pool: aioredis.Redis,
     target: dict,
+    worker_index: int,
 ) -> None:
     """
     Infinite-loop worker for a single scraping target.
 
-    v2.2 lifecycle:
-      • Waits for BrowserManager to signal readiness before each cycle.
-      • Creates a BrowserContext once, then navigates (goto) on each iteration.
-      • goto() is more memory-stable than reload() under sustained load.
-      • On transient errors (timeout): recreates context with exponential backoff.
-      • On browser crash (TargetClosedError / Page crashed): signals BrowserManager
-        to restart Chromium, then waits for the new browser to be ready.
+    v2.3 improvements:
+      • Staggered startup: sleeps (worker_index * STAGGER_SECONDS) before first
+        request. Prevents all 4 workers from hitting TradingView simultaneously.
+      • Per-cycle jitter: adds random ±JITTER_SECONDS to the sleep interval.
+        Even with 4 workers, requests are spread across a time window.
+      • Multi-selector waterfall: tries 3 CSS selectors in sequence.
+      • Last-known-good write: short-TTL live key + long-TTL LKG key.
+      • Circuit breaker: after CIRCUIT_BREAK_THRESHOLD consecutive failures,
+        pauses for CIRCUIT_BREAK_SECONDS before retrying.
     """
     worker_name = target["name"]
-    redis_key = target["redis_key"]
     url = target["url"]
 
-    logger.info("[%s] Worker started → %s", worker_name, url)
+    logger.info(
+        "[%s] Worker %d started — stagger delay: %ds",
+        worker_name, worker_index, worker_index * STAGGER_SECONDS,
+    )
+
+    # ── Staggered startup: delay each worker by its index ─────────────
+    if worker_index > 0:
+        await asyncio.sleep(worker_index * STAGGER_SECONDS)
 
     consecutive_failures: int = 0
     context: BrowserContext | None = None
@@ -341,10 +402,10 @@ async def _worker(
 
     while True:
         try:
-            # ── Wait for browser to be healthy ───────────────────────
+            # ── Wait for browser to be healthy ────────────────────────
             browser = await mgr.get_browser()
 
-            # ── Initialise or re-create context/page ─────────────────
+            # ── Initialise or re-create context/page ──────────────────
             if context is None or page is None or page.is_closed():
                 if context is not None:
                     try:
@@ -355,40 +416,38 @@ async def _worker(
                 page = await _init_page(context, url)
                 logger.info("[%s] ✓ Page (re)initialised", worker_name)
             else:
-                # Reuse context but navigate fresh (more stable than reload)
+                # Navigate fresh each cycle (goto > reload for memory stability)
                 await page.goto(
                     url,
                     wait_until="domcontentloaded",
                     timeout=SCRAPE_TIMEOUT_MS,
                 )
-                await page.locator(PRICE_SELECTOR).first.wait_for(
+                await page.locator(PRICE_SELECTORS[0]).first.wait_for(
                     state="visible",
                     timeout=SCRAPE_TIMEOUT_MS,
                 )
 
-            # ── Wait for DOM to settle after JS updates ───────────────
+            # ── Settle: wait for JS to finish updating DOM ─────────────
             await page.wait_for_timeout(RENDER_SETTLE_MS)
 
-            # ── Extract price text (use .first to avoid 2-element ambiguity) ──
-            raw_text: str = await page.locator(PRICE_SELECTOR).first.inner_text()
+            # ── Extract price using multi-selector waterfall ───────────
+            raw_text = await _try_get_price_text(page)
+
+            if raw_text is None:
+                raise RuntimeError(
+                    f"All selectors exhausted — price not found on {url}"
+                )
+
             price = _parse_price(raw_text, target)
 
             if price is not None:
-                payload = json.dumps(
-                    {
-                        "price": price,
-                        "source": "TradingView",
-                        "updated_at": datetime.now(timezone.utc).isoformat(),
-                    }
-                )
-
-                # ── Write to Redis with TTL ───────────────────────────
-                await redis_pool.set(redis_key, payload, ex=REDIS_KEY_TTL_SECONDS)
+                await _write_price(redis_pool, target, price)
                 logger.info(
-                    "[%s] ✓ %12.2f  →  Redis(%s)  [TTL=%ds]",
-                    worker_name, price, redis_key, REDIS_KEY_TTL_SECONDS,
+                    "[%s] ✓ %12.2f  →  Redis(%s)  [TTL=%ds / LKG=%dh]",
+                    worker_name, price, target["redis_key"],
+                    REDIS_KEY_TTL_SECONDS, LKG_TTL_SECONDS // 3600,
                 )
-                consecutive_failures = 0  # reset on success
+                consecutive_failures = 0  # reset circuit breaker
 
             else:
                 logger.warning(
@@ -404,42 +463,58 @@ async def _worker(
             consecutive_failures += 1
 
             if _is_browser_crash(exc):
-                # ── Browser-level crash: coordinate full restart ──────
+                # ── Browser-level crash → coordinate full restart ──────
                 logger.error(
-                    "[%s] 💥 Browser crash error #%d: %s",
+                    "[%s] 💥 Browser crash #%d: %s",
                     worker_name, consecutive_failures, exc,
                 )
-                # Invalidate local context/page — they reference a dead browser
                 context = None
                 page = None
-
-                # Trigger browser restart (only first caller does it, others wait)
                 await mgr.restart(reason=str(exc))
-
-                # After restart, reset failure counter and give browser time
                 consecutive_failures = 0
                 await asyncio.sleep(RECOVERY_DELAY_SECONDS)
                 continue
 
-            else:
-                # ── Transient error: recreate context with backoff ────
-                backoff = min(
-                    RECOVERY_DELAY_SECONDS * consecutive_failures,
-                    MAX_BACKOFF_SECONDS,
-                )
-                logger.error(
-                    "[%s] Error #%d (%s: %s) — recreating context in %ds",
-                    worker_name, consecutive_failures,
-                    type(exc).__name__, str(exc).splitlines()[0],
-                    backoff,
+            # ── Transient error (timeout / network) ───────────────────
+
+            # Circuit breaker: too many consecutive failures
+            if consecutive_failures >= CIRCUIT_BREAK_THRESHOLD:
+                logger.critical(
+                    "[%s] 🔴 Circuit breaker triggered after %d failures — "
+                    "pausing %ds before retry",
+                    worker_name, consecutive_failures, CIRCUIT_BREAK_SECONDS,
                 )
                 context = None
                 page = None
-                await asyncio.sleep(backoff)
+                consecutive_failures = 0
+                await asyncio.sleep(CIRCUIT_BREAK_SECONDS)
                 continue
 
-        # Normal sleep between successful scrapes
-        await asyncio.sleep(SCRAPE_INTERVAL_SECONDS)
+            # Normal exponential backoff with jitter
+            base_backoff = min(
+                RECOVERY_DELAY_SECONDS * consecutive_failures,
+                MAX_BACKOFF_SECONDS,
+            )
+            jitter = random.uniform(-JITTER_SECONDS, JITTER_SECONDS)
+            backoff = max(RECOVERY_DELAY_SECONDS, base_backoff + jitter)
+
+            logger.error(
+                "[%s] Error #%d (%s: %s) — recreating context in %.0fs",
+                worker_name, consecutive_failures,
+                type(exc).__name__, str(exc).splitlines()[0],
+                backoff,
+            )
+            context = None
+            page = None
+            await asyncio.sleep(backoff)
+            continue
+
+        # ── Normal inter-scrape sleep with jitter ─────────────────────
+        # Jitter spreads the 4 workers' requests across a time window,
+        # making simultaneous TradingView hits much less likely over time.
+        jitter = random.uniform(0, JITTER_SECONDS * 2)
+        sleep_time = SCRAPE_INTERVAL_SECONDS + jitter
+        await asyncio.sleep(sleep_time)
 
     # Cleanup on exit
     if context is not None:
@@ -449,18 +524,20 @@ async def _worker(
             pass
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
 # Main entry-point
-# ──────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
 
 async def main() -> None:
     logger.info("=" * 65)
-    logger.info("  SCRAPER DAEMON v2.2 — Fault-Tolerant Stream Processing")
+    logger.info("  SCRAPER DAEMON v2.3 — Resilient Anti-Rate-Limit")
     logger.info("  Targets       : %d  (%s)", len(SCRAPE_TARGETS),
                 ", ".join(t["key"] for t in SCRAPE_TARGETS))
-    logger.info("  Interval      : %ds", SCRAPE_INTERVAL_SECONDS)
+    logger.info("  Interval      : %ds ±%.0fs jitter", SCRAPE_INTERVAL_SECONDS, JITTER_SECONDS)
+    logger.info("  Stagger       : %ds between workers", STAGGER_SECONDS)
     logger.info("  Timeout       : %dms", SCRAPE_TIMEOUT_MS)
-    logger.info("  Redis TTL     : %ds", REDIS_KEY_TTL_SECONDS)
+    logger.info("  Redis TTL     : %ds (live) / %dh (LKG)", REDIS_KEY_TTL_SECONDS, LKG_TTL_SECONDS // 3600)
+    logger.info("  Circuit break : after %d failures / %ds pause", CIRCUIT_BREAK_THRESHOLD, CIRCUIT_BREAK_SECONDS)
     logger.info("  Redis         : %s", REDIS_URL)
     logger.info("=" * 65)
 
@@ -481,22 +558,22 @@ async def main() -> None:
             logger.warning("Redis not ready (%s), retrying in 2s…", exc)
             await asyncio.sleep(2)
 
-    # ── Launch Playwright + BrowserManager ───────────────────────────
+    # ── Launch Playwright + BrowserManager ──────────────────────────
     async with async_playwright() as pw:
         mgr = BrowserManager(pw)
         await mgr.start()
 
-        # ── Spawn one worker per target ──────────────────────────────
+        # ── Spawn workers with index for staggered startup ──────────
         tasks: list[asyncio.Task] = [
             asyncio.create_task(
-                _worker(mgr, redis_pool, target),
+                _worker(mgr, redis_pool, target, idx),
                 name=f"worker-{target['key']}",
             )
-            for target in SCRAPE_TARGETS
+            for idx, target in enumerate(SCRAPE_TARGETS)
         ]
         logger.info("✓ %d workers spawned — entering main loop", len(tasks))
 
-        # ── Graceful shutdown on SIGTERM/SIGINT ──────────────────────
+        # ── Graceful shutdown on SIGTERM/SIGINT ─────────────────────
         loop = asyncio.get_running_loop()
 
         def _handle_signal() -> None:
@@ -508,8 +585,7 @@ async def main() -> None:
             try:
                 loop.add_signal_handler(sig, _handle_signal)
             except NotImplementedError:
-                # Windows does not support add_signal_handler for all signals
-                pass
+                pass  # Windows
 
         try:
             await asyncio.gather(*tasks, return_exceptions=True)

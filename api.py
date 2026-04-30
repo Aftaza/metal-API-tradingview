@@ -1,19 +1,19 @@
 """
-Metal Price REST API v2.1 — Production-Ready
-=============================================
-FastAPI application that reads latest prices directly from Redis.
+Metal Price REST API v2.2 — Fault-Tolerant
+==========================================
+FastAPI application that reads latest prices from Redis.
 Zero scraping logic — all data comes from the scraper daemon.
 
-Design decisions:
-  • Redis pool injected via module-level init in lifespan (not global None)
-  • Type-safe helper functions with explicit None guards
-  • CORS origins configurable via ALLOWED_ORIGINS env variable
-  • Structured response models with Pydantic v2
-  • Redis TTL awareness: returns 503 if key is missing (expired or not yet written)
+Fault-tolerance for e-commerce (central-bullions-project.vercel.app):
+  • Last-Known-Good (LKG) fallback: if the live key (60s TTL) expires
+    during a scraper outage, falls back to lkg:* keys (24h TTL).
+    The response includes header X-Data-Stale: true so the frontend
+    can optionally show a "prices may be delayed" notice.
+  • Never returns 503 for price data as long as LKG cache is populated.
 
 Endpoints:
     GET  /              — API info
-    GET  /health        — Redis connectivity + data freshness
+    GET  /health        — Redis connectivity + data freshness + LKG status
     GET  /prices        — All metal prices + USDIDR exchange rate
     GET  /prices/{metal}?gram=N&currency=USD|IDR — Single metal with gram conversion
     GET  /exchange-rate — Current USDIDR rate
@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 import redis.asyncio as aioredis
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -100,6 +100,10 @@ class HealthResponse(BaseModel):
     metals_count: int
     usdidr_available: bool
     data_freshness: dict[str, str]
+    stale_keys: list[str] = Field(
+        default_factory=list,
+        description="Keys served from last-known-good cache (scraper may be recovering)",
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -136,6 +140,10 @@ RedisDep = Annotated[aioredis.Redis, Depends(get_redis)]
 # Redis helper functions
 # ──────────────────────────────────────────────────────────────────────
 
+# LKG key prefix must match scraper_daemon.py constant
+_LKG_PREFIX = "lkg"
+
+
 async def _read_key(redis: aioredis.Redis, key: str) -> dict | None:
     """Read and deserialise a single Redis key. Returns None if missing/invalid."""
     raw: str | None = await redis.get(key)
@@ -150,22 +158,50 @@ async def _read_key(redis: aioredis.Redis, key: str) -> dict | None:
 
 async def _read_all_prices(
     redis: aioredis.Redis,
-) -> tuple[dict[str, dict], dict | None]:
+) -> tuple[dict[str, dict], dict | None, list[str]]:
     """
-    Batch-read all price keys from Redis using MGET (single round-trip).
-    Returns: (metal_prices_dict, usdidr_data_or_None)
+    Batch-read all price keys from Redis.
+
+    Strategy (fault-tolerant for e-commerce):
+      1. Fetch all live keys (short TTL) in one MGET.
+      2. For any key that is missing (scraper recovering), fall back to
+         the last-known-good key (lkg:*, 24h TTL) written by the scraper.
+      3. Track which keys are stale so callers can set X-Data-Stale header.
+
+    Returns: (metal_prices_dict, usdidr_data_or_None, stale_keys_list)
     """
-    keys = [t["redis_key"] for t in SCRAPE_TARGETS]
-    values: list[str | None] = await redis.mget(keys)
+    live_keys = [t["redis_key"] for t in SCRAPE_TARGETS]
+    lkg_keys  = [f"{_LKG_PREFIX}:{t['key']}" for t in SCRAPE_TARGETS]
+
+    # Two MGET calls: live data + LKG fallback — 2 round-trips total
+    live_values: list[str | None] = await redis.mget(live_keys)
+    lkg_values:  list[str | None] = await redis.mget(lkg_keys)
 
     metal_prices: dict[str, dict] = {}
-    usdidr_data: dict | None = None
+    usdidr_data:  dict | None = None
+    stale_keys:   list[str] = []
 
-    for target, raw in zip(SCRAPE_TARGETS, values):
+    for target, live_raw, lkg_raw in zip(SCRAPE_TARGETS, live_values, lkg_values):
+        key = target["key"]
+        raw = live_raw  # prefer fresh data
+        is_stale = False
+
+        if raw is None and lkg_raw is not None:
+            # Scraper TTL expired — fall back to last-known-good
+            raw = lkg_raw
+            is_stale = True
+            stale_keys.append(key)
+            logger.warning(
+                "[%s] Live key expired — serving last-known-good data", key
+            )
+
         if raw is None:
             continue
+
         try:
             data = json.loads(raw)
+            if is_stale:
+                data["is_stale"] = True
         except (json.JSONDecodeError, TypeError):
             logger.warning("Could not parse Redis value for key '%s'", target["redis_key"])
             continue
@@ -173,9 +209,9 @@ async def _read_all_prices(
         if target["type"] == "currency":
             usdidr_data = data
         else:
-            metal_prices[target["key"]] = data
+            metal_prices[key] = data
 
-    return metal_prices, usdidr_data
+    return metal_prices, usdidr_data, stale_keys
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -224,9 +260,10 @@ app = FastAPI(
     description=(
         "Real-time Gold, Silver & Copper prices with USD→IDR conversion.\n\n"
         "Data sourced from TradingView via async Playwright scraper daemon. "
-        "All reads are sub-millisecond Redis lookups."
+        "All reads are O(1) Redis lookups. Includes last-known-good (LKG) fallback "
+        "so the API never returns 503 during short scraper outages."
     ),
-    version="2.1.0",
+    version="2.2.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -285,8 +322,8 @@ async def health_check(redis: RedisDep) -> HealthResponse:
     """
     Health check — verifies Redis connectivity and data freshness.
 
-    Returns 'healthy' only when Redis is connected AND at least one metal
-    price is available in the cache.
+    Returns 'healthy' when live data is fresh, 'degraded' when
+    serving LKG (stale) data, or 'unhealthy' when Redis is down.
     """
     try:
         await redis.ping()
@@ -294,41 +331,49 @@ async def health_check(redis: RedisDep) -> HealthResponse:
     except Exception:
         redis_ok = False
 
-    metal_prices, usdidr_data = await _read_all_prices(redis)
+    metal_prices, usdidr_data, stale_keys = await _read_all_prices(redis)
 
-    # Check freshness: report how old each key's data is
     freshness: dict[str, str] = {}
     for target in SCRAPE_TARGETS:
         key = target["key"]
-        if target["type"] == "metal":
-            data = metal_prices.get(key)
-        else:
-            data = usdidr_data
-
+        data = metal_prices.get(key) if target["type"] == "metal" else usdidr_data
         if data and "updated_at" in data:
-            freshness[key] = data["updated_at"]
+            label = f"{data['updated_at']} [STALE]" if data.get("is_stale") else data["updated_at"]
+            freshness[key] = label
         else:
             freshness[key] = "unavailable"
 
+    if not redis_ok:
+        overall = "unhealthy"
+    elif stale_keys:
+        overall = "degraded"   # serving LKG — scraper may be recovering
+    elif len(metal_prices) > 0:
+        overall = "healthy"
+    else:
+        overall = "degraded"
+
     return HealthResponse(
-        status="healthy" if redis_ok and len(metal_prices) > 0 else "degraded",
+        status=overall,
         redis_connected=redis_ok,
         metals_available=list(metal_prices.keys()),
         metals_count=len(metal_prices),
         usdidr_available=usdidr_data is not None,
         data_freshness=freshness,
+        stale_keys=stale_keys,
     )
 
 
-@app.get("/prices", response_model=MetalPriceResponse, tags=["Prices"])
-async def get_all_prices(redis: RedisDep) -> MetalPriceResponse:
+@app.get("/prices", tags=["Prices"])
+async def get_all_prices(redis: RedisDep, response: Response) -> MetalPriceResponse:
     """
     Get all metal prices with USDIDR exchange rate and IDR conversion.
 
-    Data is read directly from Redis (sub-millisecond latency).
-    Returns 503 if the scraper daemon has not written data yet.
+    Fault-tolerant: if the live scraper key has expired but a
+    last-known-good (LKG) value exists (up to 24h old), it is returned
+    with header **X-Data-Stale: true** and **X-Stale-Keys: gold,silver**.
+    Only raises 503 if BOTH live and LKG caches are empty.
     """
-    metal_prices, usdidr_data = await _read_all_prices(redis)
+    metal_prices, usdidr_data, stale_keys = await _read_all_prices(redis)
 
     if not metal_prices:
         raise HTTPException(
@@ -339,9 +384,14 @@ async def get_all_prices(redis: RedisDep) -> MetalPriceResponse:
             ),
         )
 
+    # Set stale-data headers so the frontend can show a warning
+    if stale_keys:
+        response.headers["X-Data-Stale"] = "true"
+        response.headers["X-Stale-Keys"] = ",".join(stale_keys)
+        logger.warning("Serving stale LKG data for keys: %s", stale_keys)
+
     usdidr_rate: float | None = usdidr_data["price"] if usdidr_data else None
     now_iso = datetime.now(timezone.utc).isoformat()
-
     prices: list[MetalPrice] = []
     latest_ts: str = ""
 
@@ -360,6 +410,9 @@ async def get_all_prices(redis: RedisDep) -> MetalPriceResponse:
         if ts > latest_ts:
             latest_ts = ts
 
+        # Mark source as stale in payload if coming from LKG cache
+        source_label = "TradingView (cached)" if data.get("is_stale") else "TradingView"
+
         prices.append(
             MetalPrice(
                 metal=key.upper(),
@@ -368,7 +421,7 @@ async def get_all_prices(redis: RedisDep) -> MetalPriceResponse:
                 price_per_gram_idr=round(price_per_gram_idr, 2) if price_per_gram_idr else None,
                 currency="USD/IDR" if usdidr_rate else "USD",
                 timestamp=ts,
-                source="TradingView",
+                source=source_label,
             )
         )
 
@@ -511,6 +564,6 @@ if __name__ == "__main__":
         "api:app",
         host="0.0.0.0",
         port=8000,
-        workers=1,
+        workers=2,
         log_level="info",
     )
