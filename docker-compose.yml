@@ -89,6 +89,7 @@ services:
 
   # ── Scraper Daemon: 4 Playwright workers ────────────────────
   # Workers: gold, silver, copper, usdidr
+  # v2.2: BrowserManager handles auto-restart on Chromium OOM crash
   scraper-daemon:
     build:
       context: .
@@ -96,12 +97,12 @@ services:
     container_name: metal-scraper-daemon
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - SCRAPE_INTERVAL_SECONDS=5
+      - SCRAPE_INTERVAL_SECONDS=15
       - SCRAPE_TIMEOUT_MS=30000
       - RECOVERY_DELAY_SECONDS=5
       - MAX_BACKOFF_SECONDS=60
       - REDIS_KEY_TTL_SECONDS=60
-      - RENDER_SETTLE_MS=600
+      - RENDER_SETTLE_MS=500
       - LOG_LEVEL=INFO
     depends_on:
       redis:
@@ -109,8 +110,10 @@ services:
     networks:
       - metal-network
     restart: unless-stopped
-    # Playwright/Chromium needs shared memory
-    shm_size: "512mb"
+    # Chromium uses /dev/shm for renderer shared memory.
+    # 4 tabs @ ~200MB each = ~800MB minimum. Set to 1G for headroom.
+    # Previously 512mb caused OOM → Page crashed → TargetClosedError cascade.
+    shm_size: "1gb"
     deploy:
       resources:
         limits:

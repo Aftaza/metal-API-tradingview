@@ -1,0 +1,1507 @@
+metal-api-v2  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+metal-api-v2  | INFO:     Started parent process [1]
+metal-api-v2  | INFO:     Started server process [7]
+metal-api-v2  | INFO:     Waiting for application startup.
+metal-api-v2  | 2026-04-30 12:56:10 | INFO     | api                    | Connecting to Redis: redis://redis:6379/0
+metal-api-v2  | 2026-04-30 12:56:10 | INFO     | api                    | ✓ Redis connected on attempt 1
+metal-api-v2  | INFO:     Application startup complete.
+metal-api-v2  | INFO:     Started server process [8]
+metal-api-v2  | INFO:     Waiting for application startup.
+metal-api-v2  | 2026-04-30 12:56:10 | INFO     | api                    | Connecting to Redis: redis://redis:6379/0
+metal-api-v2  | 2026-04-30 12:56:10 | INFO     | api                    | ✓ Redis connected on attempt 1
+metal-api-v2  | INFO:     Application startup complete.
+metal-api-v2  | INFO:     127.0.0.1:46192 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:55602 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:52164 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:50504 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:39086 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:47922 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40058 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40072 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40072 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:56258 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:46452 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:56260 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:38590 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:59708 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:50676 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:59712 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:35610 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:59162 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:35624 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:60426 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40236 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:43520 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40242 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:60240 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:47570 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:60248 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:55284 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:55290 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:59696 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:50038 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:48590 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:48596 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:52506 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:53798 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:53812 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:34254 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:38332 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40624 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40632 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:54182 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:53104 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:53106 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:36028 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:39318 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:58622 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:58626 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:58366 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:59346 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:59356 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:39404 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:37250 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:39420 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40470 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:38738 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:46214 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:46216 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:50856 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:46764 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:50862 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:58198 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     127.0.0.1:43246 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:48708 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     127.0.0.1:39174 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:39734 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:55552 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     127.0.0.1:36382 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:43510 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:46628 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     172.18.0.5:36778 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     127.0.0.1:48506 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:36794 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     127.0.0.1:59712 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:58258 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     127.0.0.1:33706 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:52242 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:60972 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:35846 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2  | INFO:     127.0.0.1:46852 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:33346 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:40404 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:43358 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40568 - "POST /hello.world?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "POST /?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input HTTP/1.1" 405 Method Not Allowed
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /vendor/phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /vendor/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /vendor/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /vendor/phpunit/phpunit/LICENSE/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /vendor/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /lib/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /lib/phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /lib/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /lib/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /lib/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /laravel/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /www/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /ws/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /yii/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /zend/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /ws/ec/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /V2/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /tests/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /test/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /testing/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /api/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /demo/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /cms/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /crm/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /backup/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /blog/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     127.0.0.1:59148 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /workspace/drupal/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /panel/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /public/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /apps/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /app/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /index.php?s=/index/\think\app/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=Hello HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /public/index.php?s=/index/\think\app/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=Hello HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /index.php?lang=../../../../../../../../usr/local/lib/php/pearcmd&+config-create+/&/<?echo(md5("hi"));?>+/tmp/index1.php HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /index.php?lang=../../../../../../../../tmp/index1 HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     172.18.0.5:40568 - "GET /containers/json HTTP/1.1" 404 Not Found
+metal-api-v2  | INFO:     127.0.0.1:38348 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:33468 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:38574 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:53048 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:32826 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:40006 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:47792 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:33314 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:44324 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:44268 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:46694 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:52066 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:37112 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:42634 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:49506 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:42640 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:35532 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:48202 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:48702 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:37014 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:34790 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:42142 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:39496 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:59510 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:42580 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:43578 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:53328 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:38408 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:40584 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:46702 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:33012 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:47626 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:46478 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:56326 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:52294 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2  | INFO:     127.0.0.1:54352 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43936 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41794 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57142 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49182 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33218 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:45054 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:34536 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49064 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:48780 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:37100 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:55508 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:54854 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:45830 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:55574 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:47478 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:52826 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:40794 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41934 - "GET /health HTTP/1.1" 200 OK
+metal-nginx   | /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+metal-nginx           | /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+metal-nginx           | /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+metal-nginx           | 10-listen-on-ipv6-by-default.sh: info: can not modify /etc/nginx/conf.d/default.conf (read-only file system?)
+metal-redis   | 1:C 30 Apr 2026 12:55:54.584 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+metal-redis           | 1:C 30 Apr 2026 12:55:54.584 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+metal-redis           | 1:C 30 Apr 2026 12:55:54.584 * Redis version=7.4.8, bits=64, commit=00000000, modified=0, pid=1, just started
+metal-redis           | 1:C 30 Apr 2026 12:55:54.584 * Configuration loaded
+metal-redis           | 1:M 30 Apr 2026 12:55:54.585 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+metal-redis           | 1:M 30 Apr 2026 12:55:54.585 * monotonic clock: POSIX clock_gettime
+metal-redis           | 1:M 30 Apr 2026 12:55:54.586 * Running mode=standalone, port=6379.
+metal-redis           | 1:M 30 Apr 2026 12:55:54.586 * Server initialized
+metal-redis           | 1:M 30 Apr 2026 12:55:54.586 * Ready to accept connections tcp
+metal-nginx           | /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+metal-nginx           | /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+metal-nginx           | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+metal-nginx           | /docker-entrypoint.sh: Configuration complete; ready for start up
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: using the "epoll" event method
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: nginx/1.25.5
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: built by gcc 13.2.1 20231014 (Alpine 13.2.1_git20231014) 
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: OS: Linux 6.8.0-101-generic
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1024:524288
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: start worker processes
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: start worker process 21
+metal-nginx           | 2026/04/30 12:56:05 [notice] 1#1: start worker process 22
+metal-nginx           | 182.253.116.23 - - [30/Apr/2026:12:56:57 +0000] "GET /prices HTTP/1.1" 200 318 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0"
+metal-nginx           | 44.201.245.19 - - [30/Apr/2026:12:57:11 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 3.214.224.32 - - [30/Apr/2026:12:57:12 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:16 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:22 +0000] "GET /prices HTTP/1.1" 200 315 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:28 +0000] "GET /prices HTTP/1.1" 200 315 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:34 +0000] "GET /prices HTTP/1.1" 200 315 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:40 +0000] "GET /prices HTTP/1.1" 200 324 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:45 +0000] "GET /prices HTTP/1.1" 200 324 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:51 +0000] "GET /prices HTTP/1.1" 200 324 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:57:57 +0000] "GET /prices HTTP/1.1" 200 326 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:03 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:09 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:15 +0000] "GET /prices HTTP/1.1" 200 323 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:21 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:26 +0000] "GET /prices HTTP/1.1" 200 326 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:32 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:38 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:44 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:50 +0000] "GET /prices HTTP/1.1" 200 321 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:58:56 +0000] "GET /prices HTTP/1.1" 200 321 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:02 +0000] "GET /prices HTTP/1.1" 200 323 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:07 +0000] "GET /prices HTTP/1.1" 200 327 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:13 +0000] "GET /prices HTTP/1.1" 200 327 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:19 +0000] "GET /prices HTTP/1.1" 200 322 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:25 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:31 +0000] "GET /prices HTTP/1.1" 200 320 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:37 +0000] "GET /prices HTTP/1.1" 200 322 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:43 +0000] "GET /prices HTTP/1.1" 200 322 "-" "node"
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         | =================================================================
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         |   SCRAPER DAEMON v2.1 — Optimized Stream Processing
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         |   Targets       : 4  (gold, silver, copper, usdidr)
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         |   Interval      : 5s
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:48 +0000] "GET /prices HTTP/1.1" 200 322 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:12:59:54 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:00 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:06 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:12 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:18 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:24 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:29 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:35 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:41 +0000] "GET /prices HTTP/1.1" 200 316 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:47 +0000] "GET /prices HTTP/1.1" 200 281 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:00:53 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:01:04 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:01:29 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:02:00 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:02:11 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         |   Timeout       : 30000ms
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         |   Redis TTL     : 60s
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         |   Redis         : redis://redis:6379/0
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         | =================================================================
+metal-scraper-daemon  | 2026-04-30 12:56:05 | INFO     | scraper_daemon         | ✓ Connected to Redis
+metal-scraper-daemon  | 2026-04-30 12:56:06 | INFO     | scraper_daemon         | ✓ Chromium launched
+metal-scraper-daemon  | 2026-04-30 12:56:06 | INFO     | scraper_daemon         | ✓ 4 workers spawned — entering main loop
+metal-scraper-daemon  | 2026-04-30 12:56:06 | INFO     | scraper_daemon         | [Gold (XAUUSD)] Worker started → https://www.tradingview.com/symbols/XAUUSD/
+metal-scraper-daemon  | 2026-04-30 12:56:06 | INFO     | scraper_daemon         | [Silver (XAGUSD)] Worker started → https://www.tradingview.com/symbols/XAGUSD/
+metal-scraper-daemon  | 2026-04-30 12:56:06 | INFO     | scraper_daemon         | [Copper (XCUUSD)] Worker started → https://www.tradingview.com/symbols/XCUUSD/
+metal-scraper-daemon  | 2026-04-30 12:56:06 | INFO     | scraper_daemon         | [USD/IDR] Worker started → https://www.tradingview.com/symbols/USDIDR/
+metal-scraper-daemon  | 2026-04-30 12:56:21 | INFO     | scraper_daemon         | [USD/IDR] ✓ Page (re)initialised
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:02:17 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:02:28 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 13.221.243.0 - - [30/Apr/2026:13:03:24 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:16 +0000] "POST /cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh HTTP/1.1" 400 157 "-" "-"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:17 +0000] "POST /cgi-bin/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/bin/sh HTTP/1.1" 400 157 "-" "-"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:17 +0000] "POST /hello.world?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:17 +0000] "POST /?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input HTTP/1.1" 405 31 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:18 +0000] "GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:18 +0000] "GET /vendor/phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:19 +0000] "GET /vendor/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:19 +0000] "GET /vendor/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:19 +0000] "GET /vendor/phpunit/phpunit/LICENSE/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:20 +0000] "GET /vendor/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:20 +0000] "GET /phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:20 +0000] "GET /phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:21 +0000] "GET /phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:21 +0000] "GET /phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:21 +0000] "GET /lib/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:22 +0000] "GET /lib/phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:22 +0000] "GET /lib/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:22 +0000] "GET /lib/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:23 +0000] "GET /lib/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:23 +0000] "GET /laravel/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:24 +0000] "GET /www/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:24 +0000] "GET /ws/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-api-v2          | INFO:     127.0.0.1:38254 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57432 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:34140 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53650 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:45468 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53730 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:44790 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51386 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41672 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51672 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58196 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:42760 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33372 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43712 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38006 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33484 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53662 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41110 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51962 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:44364 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43882 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:34300 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:37806 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58712 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:46570 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51366 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:39172 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:40706 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:56134 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:59602 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:56150 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:35228 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43994 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38796 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:39588 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49738 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:39584 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:36440 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:39420 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33864 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:52698 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:55362 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38080 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57488 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:52054 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38614 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:54194 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43994 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:56492 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:36040 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53456 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:60840 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:45512 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58710 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:50462 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:52608 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33070 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33742 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58420 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41712 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:55210 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:37476 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:34982 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:40164 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:60372 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51104 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:38686 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:38686 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:38686 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:38686 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:38690 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:38690 - "GET /prices HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:54042 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53074 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:44822 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:44632 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:44632 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:44632 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:44632 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:44364 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:34342 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:60376 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:45972 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:47610 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:44072 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:41424 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:24 +0000] "GET /yii/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:24 +0000] "GET /zend/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:25 +0000] "GET /ws/ec/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:25 +0000] "GET /V2/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:25 +0000] "GET /tests/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:25 +0000] "GET /test/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:26 +0000] "GET /testing/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:26 +0000] "GET /api/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:26 +0000] "GET /demo/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:27 +0000] "GET /cms/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:27 +0000] "GET /crm/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:27 +0000] "GET /admin/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 153 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:27 +0000] "GET /backup/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:28 +0000] "GET /blog/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:28 +0000] "GET /workspace/drupal/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:28 +0000] "GET /panel/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:29 +0000] "GET /public/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:29 +0000] "GET /apps/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:30 +0000] "GET /app/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:30 +0000] "GET /index.php?s=/index/\x5Cthink\x5Capp/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=Hello HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:31 +0000] "GET /public/index.php?s=/index/\x5Cthink\x5Capp/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=Hello HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:31 +0000] "GET /index.php?lang=../../../../../../../../usr/local/lib/php/pearcmd&+config-create+/&/<?echo(md5(\x22hi\x22));?>+/tmp/index1.php HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:31 +0000] "GET /index.php?lang=../../../../../../../../tmp/index1 HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 167.99.224.99 - - [30/Apr/2026:13:04:32 +0000] "GET /containers/json HTTP/1.1" 404 22 "-" "libredtail-http"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:34:38 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 3.84.132.63 - - [30/Apr/2026:13:34:39 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 3.84.132.63 - - [30/Apr/2026:13:34:39 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:34:42 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:34:48 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:34:51 +0000] "GET /prices HTTP/1.1" 200 325 "-" "node"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:35:22 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:35:22 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:35:23 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:35:23 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:35:46 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:35:52 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:36:37 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 54.172.254.129 - - [30/Apr/2026:13:36:41 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 54.211.67.149 - - [30/Apr/2026:13:36:47 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 54.211.67.149 - - [30/Apr/2026:13:36:56 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 54.211.67.149 - - [30/Apr/2026:13:37:17 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:37:21 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.84.132.63 - - [30/Apr/2026:13:37:21 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:37:21 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:37:21 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:37:27 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:37:28 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:37:39 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 3.236.141.176 - - [30/Apr/2026:13:37:48 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 54.172.254.129 - - [30/Apr/2026:13:40:39 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 44.201.121.189 - - [30/Apr/2026:13:40:39 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:40:46 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 34.239.246.208 - - [30/Apr/2026:13:40:51 +0000] "GET /prices HTTP/1.1" 503 94 "-" "node"
+metal-nginx           | 182.253.116.11 - - [30/Apr/2026:13:54:06 +0000] "GET /prices HTTP/1.1" 503 94 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0"
+metal-scraper-daemon  | 2026-04-30 12:56:22 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 12:56:22 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:23 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:24 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 12:56:24 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 12:56:25 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.50  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:25 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4634.48  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:35 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:40 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:45 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.57  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:46 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4637.14  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:50 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:56:57 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:03 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4636.73  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:04 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.56  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:05 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:14 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:20 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.51  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:21 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:21 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4635.68  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:29 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:37 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.90  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:38 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4636.64  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:39 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.57  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:44 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:54 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:58 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.56  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:57:58 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4636.35  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:00 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:10 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:15 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.51  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:17 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4635.42  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:18 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:26 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:32 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.52  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:36 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:38 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4636.09  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:41 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:48 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.54  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:54 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:58:57 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:00 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4639.29  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:07 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.57  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:11 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:15 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:18 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4639.41  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:25 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.56  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:29 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:32 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:36 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4639.62  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:43 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.55  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:48 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-api-v2          | INFO:     127.0.0.1:43380 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:41424 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:32956 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:52868 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:41368 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:37182 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:47660 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:47660 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:47660 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:40310 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:47660 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:40864 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:40314 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:40314 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:49972 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:60634 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:60648 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:34950 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43352 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49312 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38600 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51792 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49792 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:40558 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43822 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41616 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:46880 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53898 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:50026 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:39976 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:39976 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:39986 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     172.18.0.5:47748 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:58542 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:32962 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49932 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43766 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:37938 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:44828 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51822 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:35458 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:34800 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41566 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:36206 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49150 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:40074 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:44522 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57708 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58584 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:46744 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:35210 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:47992 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53302 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:34520 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:59030 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:59988 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49530 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:45146 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43362 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:48538 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:42628 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33472 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58406 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:60406 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43588 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:36764 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38098 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:34594 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57004 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:46498 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:37048 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57034 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:49156 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:54598 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53246 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:36848 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57816 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:47088 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:37396 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58964 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:45264 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33600 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:43830 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41456 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:42144 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:48390 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     172.18.0.5:40708 - "GET /prices HTTP/1.1" 503 Service Unavailable
+metal-api-v2          | INFO:     127.0.0.1:34984 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41374 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:55806 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:51402 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:33620 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:60124 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:53374 - "GET /health HTTP/1.1" 200 OK
+metal-scraper-daemon  | 2026-04-30 12:59:49 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 12:59:51 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4639.11  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:00:19 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:00:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:00:24 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:00:26 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:00:54 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:00:58 | ERROR    | scraper_daemon         | [USD/IDR] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:01:00 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:01:01 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:01:34 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:01:38 | ERROR    | scraper_daemon         | [USD/IDR] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:01:40 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:01:41 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:02:19 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:02:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-api-v2          | INFO:     127.0.0.1:46186 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:44846 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:37612 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:50992 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38418 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:50708 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:60524 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:50210 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:57840 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:50800 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58774 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:35644 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:38624 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:41656 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:48822 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:55410 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:58522 - "GET /health HTTP/1.1" 200 OK
+metal-api-v2          | INFO:     127.0.0.1:36116 - "GET /health HTTP/1.1" 200 OK
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:02:25 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:02:27 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:03:09 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:03:13 | ERROR    | scraper_daemon         | [USD/IDR] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:03:15 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:03:17 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:04:04 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:04:08 | ERROR    | scraper_daemon         | [USD/IDR] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:04:10 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:04:12 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:05:04 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:05:09 | ERROR    | scraper_daemon         | [USD/IDR] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:05:10 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:05:12 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:06:09 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:06:14 | ERROR    | scraper_daemon         | [USD/IDR] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:06:15 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:06:17 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:07:20 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:07:24 | ERROR    | scraper_daemon         | [USD/IDR] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:07:25 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:07:27 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:08:35 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:08:39 | ERROR    | scraper_daemon         | [USD/IDR] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:08:41 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:08:42 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:09:29 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:09:30 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.62  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:09:41 | INFO     | scraper_daemon         | [USD/IDR] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:09:42 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:09:43 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:09:44 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.90  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:09:44 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:09:46 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4638.73  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:09:47 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.67  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:09:59 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:02 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.90  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:04 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4639.81  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:05 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.70  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:16 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:17 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:21 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4641.04  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:21 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.67  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:34 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.90  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:35 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:39 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.64  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:39 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4639.56  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:50 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:54 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:10:57 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.59  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:11:01 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4637.94  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:11:06 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:11:08 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:11:33 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:11:37 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:11:41 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:11:43 | ERROR    | scraper_daemon         | [USD/IDR] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:12:08 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:12:12 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:12:16 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:12:18 | ERROR    | scraper_daemon         | [USD/IDR] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:12:49 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:12:52 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:12:56 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:12:59 | ERROR    | scraper_daemon         | [USD/IDR] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:13:34 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:13:37 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:13:41 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:13:44 | ERROR    | scraper_daemon         | [USD/IDR] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:14:24 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:14:27 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:14:31 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:14:34 | ERROR    | scraper_daemon         | [USD/IDR] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:15:19 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:15:22 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:15:26 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:15:29 | ERROR    | scraper_daemon         | [USD/IDR] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:16:19 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:16:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:16:26 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:16:29 | ERROR    | scraper_daemon         | [USD/IDR] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:17:24 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:17:28 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:17:32 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:17:34 | ERROR    | scraper_daemon         | [USD/IDR] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:18:34 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:18:38 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:18:42 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:18:44 | ERROR    | scraper_daemon         | [USD/IDR] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:19:49 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:19:53 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:19:57 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:19:59 | ERROR    | scraper_daemon         | [USD/IDR] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:20:44 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:20:45 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.67  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:20:51 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:20:51 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4637.48  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:20:52 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:20:59 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:06 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.65  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:06 | INFO     | scraper_daemon         | [USD/IDR] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:21:07 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:11 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4636.40  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:15 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:25 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:26 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.61  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:32 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:32 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4634.39  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:42 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:45 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.63  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:49 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:50 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4635.94  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:21:58 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:03 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.68  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:06 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.89  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:08 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4636.57  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:16 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:22 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.68  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:24 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4636.49  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:30 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:32 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:37 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.68  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:22:43 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4637.51  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:23:06 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:23:08 | ERROR    | scraper_daemon         | [USD/IDR] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:23:12 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:23:18 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:23:41 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:23:43 | ERROR    | scraper_daemon         | [USD/IDR] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:23:47 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:23:53 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:24:21 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:24:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:24:27 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:24:33 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:25:06 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:25:09 | ERROR    | scraper_daemon         | [USD/IDR] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:25:13 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:25:18 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:25:56 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:25:59 | ERROR    | scraper_daemon         | [USD/IDR] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:26:03 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:26:09 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:26:51 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:26:54 | ERROR    | scraper_daemon         | [USD/IDR] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:26:58 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:27:04 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:27:51 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:27:54 | ERROR    | scraper_daemon         | [USD/IDR] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:27:58 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:28:04 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:28:57 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:28:59 | ERROR    | scraper_daemon         | [USD/IDR] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:29:03 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:29:09 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:30:07 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:30:09 | ERROR    | scraper_daemon         | [USD/IDR] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:30:13 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:30:19 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:31:22 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:31:24 | ERROR    | scraper_daemon         | [USD/IDR] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:31:28 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:31:34 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:32:19 | INFO     | scraper_daemon         | [USD/IDR] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:32:19 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:23 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:32:24 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.69  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:34 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:37 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:32:38 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4631.41  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:38 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.68  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:42 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:32:43 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:50 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:56 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.66  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:32:59 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:00 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4632.08  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:08 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:14 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.68  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:18 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:20 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4634.19  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:25 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:32 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.64  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:34 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:39 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4631.80  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:46 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:50 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.57  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:51 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:33:57 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4631.06  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:34:04 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:34:09 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:34:10 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.47  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:34:15 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4630.96  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:34:18 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:34:44 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:34:46 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:34:50 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:34:53 | ERROR    | scraper_daemon         | [USD/IDR] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:35:19 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:35:21 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:35:25 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:35:28 | ERROR    | scraper_daemon         | [USD/IDR] Error #2 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:36:00 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:36:01 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:36:05 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:36:08 | ERROR    | scraper_daemon         | [USD/IDR] Error #3 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:36:45 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:36:46 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:36:50 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:36:54 | ERROR    | scraper_daemon         | [USD/IDR] Error #4 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:37:35 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:37:36 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:37:40 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:37:44 | ERROR    | scraper_daemon         | [USD/IDR] Error #5 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:38:30 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:38:32 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:38:36 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:38:39 | ERROR    | scraper_daemon         | [USD/IDR] Error #6 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:39:30 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:39:32 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:39:36 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:39:39 | ERROR    | scraper_daemon         | [USD/IDR] Error #7 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:40:35 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:40:38 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:40:41 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:40:44 | ERROR    | scraper_daemon         | [USD/IDR] Error #8 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:41:45 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:41:48 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:41:51 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:41:54 | ERROR    | scraper_daemon         | [USD/IDR] Error #9 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:43:01 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:43:03 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:43:06 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:43:09 | ERROR    | scraper_daemon         | [USD/IDR] Error #10 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:43:56 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:43:57 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.87  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:44:04 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:44:05 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.24  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:44:17 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:44:18 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4622.56  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:44:20 | INFO     | scraper_daemon         | [USD/IDR] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:44:23 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:44:26 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:44:43 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:44:44 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:44:55 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:44:57 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  |   -     2 × locator resolved to 2 elements. Proceeding with the first one: <span translate="no" data-qa-id="symbol-last-value" class="last-fzcYMweq js-symbol-last">…</span>
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:45:08 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:45:08 | ERROR    | scraper_daemon         | [USD/IDR] Error #1 (Error: Page.wait_for_selector: Page crashed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  |   -     32 × locator resolved to 2 elements. Proceeding with the first one: <span translate="no" data-qa-id="symbol-last-value" class="last-fzcYMweq js-symbol-last">…</span>
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:45:09 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.24  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:45:10 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:45:11 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4624.39  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:45:18 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (Error: Page.reload: Page crashed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for navigation until "domcontentloaded"
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:45:21 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:45:26 | INFO     | scraper_daemon         | [USD/IDR] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:45:27 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:45:28 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.26  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:45:33 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (Error: Page.reload: Page crashed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for navigation until "domcontentloaded"
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:45:37 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:45:37 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:45:37 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:45:38 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4623.20  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:45:43 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (Error: Page.reload: Page crashed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for navigation until "domcontentloaded"
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:45:46 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:45:47 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.23  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:45:52 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (Error: Page.reload: Page crashed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for navigation until "domcontentloaded"
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:45:53 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:45:54 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4623.09  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:46:04 | INFO     | scraper_daemon         | [Copper (XCUUSD)] ✓         5.88  →  Redis(price:copper)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:46:05 | ERROR    | scraper_daemon         | [USD/IDR] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:46:07 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:46:08 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.19  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:46:20 | INFO     | scraper_daemon         | [USD/IDR] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:46:20 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:46:25 | INFO     | scraper_daemon         | [Silver (XAGUSD)] ✓        73.18  →  Redis(price:silver)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:46:30 | INFO     | scraper_daemon         | [USD/IDR] ✓     17373.00  →  Redis(price:usdidr)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:46:30 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #1 (Error: Page.reload: Page crashed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for navigation until "domcontentloaded"
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:46:34 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  |   -     - locator resolved to 2 elements. Proceeding with the first one: <span translate="no" data-qa-id="symbol-last-value" class="last-fzcYMweq js-symbol-last">…</span>
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:46:42 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #1 (TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:46:46 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓ Page (re)initialised
+metal-scraper-daemon  | 2026-04-30 13:46:47 | INFO     | scraper_daemon         | [Gold (XAUUSD)] ✓      4620.20  →  Redis(price:gold)  [TTL=60s]
+metal-scraper-daemon  | 2026-04-30 13:46:53 | ERROR    | scraper_daemon         | [USD/IDR] Error #1 (TargetClosedError: Page.wait_for_selector: Target page, context or browser has been closed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  |   -     2 × locator resolved to 2 elements. Proceeding with the first one: <span translate="no" data-qa-id="symbol-last-value" class="last-fzcYMweq js-symbol-last">…</span>
+metal-scraper-daemon  | ) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:46:53 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #2 (TargetClosedError: Page.wait_for_selector: Target page, context or browser has been closed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - waiting for locator("span[data-qa-id='symbol-last-value']") to be visible
+metal-scraper-daemon  |   -     14 × locator resolved to 2 elements. Proceeding with the first one: <span translate="no" data-qa-id="symbol-last-value" class="last-fzcYMweq js-symbol-last">…</span>
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:46:53 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #2 (TargetClosedError: Page.goto: Target page, context or browser has been closed
+metal-scraper-daemon  | Call log:
+metal-scraper-daemon  |   - navigating to "https://www.tradingview.com/symbols/XCUUSD/", waiting until "domcontentloaded"
+metal-scraper-daemon  | ) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:46:53 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #1 (TargetClosedError: Page.reload: Target page, context or browser has been closed) — recreating context in 5s
+metal-scraper-daemon  | 2026-04-30 13:46:58 | ERROR    | scraper_daemon         | [USD/IDR] Error #2 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:46:58 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #2 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 10s
+metal-scraper-daemon  | 2026-04-30 13:47:03 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #3 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:47:03 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #3 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:47:08 | ERROR    | scraper_daemon         | [USD/IDR] Error #3 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:47:08 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #3 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 15s
+metal-scraper-daemon  | 2026-04-30 13:47:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #4 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:47:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #4 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:47:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #4 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:47:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #4 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 20s
+metal-scraper-daemon  | 2026-04-30 13:47:38 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #5 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:47:38 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #5 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:47:43 | ERROR    | scraper_daemon         | [USD/IDR] Error #5 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:47:43 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #5 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 25s
+metal-scraper-daemon  | 2026-04-30 13:48:03 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #6 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:48:03 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #6 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:48:08 | ERROR    | scraper_daemon         | [USD/IDR] Error #6 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:48:08 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #6 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 30s
+metal-scraper-daemon  | 2026-04-30 13:48:33 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #7 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:48:33 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #7 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:48:38 | ERROR    | scraper_daemon         | [USD/IDR] Error #7 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:48:38 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #7 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 35s
+metal-scraper-daemon  | 2026-04-30 13:49:08 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #8 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:49:08 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #8 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:49:13 | ERROR    | scraper_daemon         | [USD/IDR] Error #8 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:49:13 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #8 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 40s
+metal-scraper-daemon  | 2026-04-30 13:49:48 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #9 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:49:48 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #9 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:49:53 | ERROR    | scraper_daemon         | [USD/IDR] Error #9 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:49:53 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #9 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 45s
+metal-scraper-daemon  | 2026-04-30 13:50:33 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #10 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:50:33 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #10 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:50:38 | ERROR    | scraper_daemon         | [USD/IDR] Error #10 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:50:38 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #10 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 50s
+metal-scraper-daemon  | 2026-04-30 13:51:23 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #11 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 55s
+metal-scraper-daemon  | 2026-04-30 13:51:23 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #11 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 55s
+metal-scraper-daemon  | 2026-04-30 13:51:28 | ERROR    | scraper_daemon         | [USD/IDR] Error #11 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 55s
+metal-scraper-daemon  | 2026-04-30 13:51:28 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #11 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 55s
+metal-scraper-daemon  | 2026-04-30 13:52:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #12 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:52:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #12 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:52:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #12 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:52:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #12 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:53:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #13 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:53:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #13 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:53:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #13 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:53:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #13 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:54:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #14 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:54:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #14 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:54:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #14 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:54:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #14 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:55:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #15 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:55:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #15 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:55:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #15 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:55:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #15 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:56:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #16 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:56:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #16 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:56:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #16 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:56:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #16 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:57:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #17 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:57:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #17 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:57:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #17 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:57:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #17 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:58:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #18 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:58:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #18 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:58:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #18 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:58:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #18 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:59:18 | ERROR    | scraper_daemon         | [Silver (XAGUSD)] Error #19 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:59:18 | ERROR    | scraper_daemon         | [Copper (XCUUSD)] Error #19 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:59:23 | ERROR    | scraper_daemon         | [USD/IDR] Error #19 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
+metal-scraper-daemon  | 2026-04-30 13:59:23 | ERROR    | scraper_daemon         | [Gold (XAUUSD)] Error #19 (TargetClosedError: Browser.new_context: Target page, context or browser has been closed) — recreating context in 60s
