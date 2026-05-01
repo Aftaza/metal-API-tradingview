@@ -1,33 +1,50 @@
+# ── Git / VCS ─────────────────────────────────────────────────
 .git
 .gitignore
+
+# ── Documentation ─────────────────────────────────────────────
 README.md
-Dockerfile
+docs/
+
+# ── Docker meta-files (don't copy into image) ─────────────────
 .dockerignore
-.docker/
+Dockerfile*
+docker-compose*
+
+# ── Python cache / compiled files ─────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pdb
 .Python
+
+# ── Virtual environments ───────────────────────────────────────
 env/
 venv/
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-!.env
+
+# ── Secrets / environment (never copy into images!) ───────────
 .env
-requirements-test.txt
-requirements-dev.txt
-Dockerfile*
-docker-compose*
+*.env
+
+# ── Test files ────────────────────────────────────────────────
+tests/
+test_*.py
+*_test.py
+pytest.ini
+.pytest_cache/
+
+# ── Dev / editor artifacts ────────────────────────────────────
+*.log
+logs/
 *.swp
 *.swo
 *~
+.DS_Store
+Thumbs.db
+
+# ── Old architecture files (Selenium/Chrome) ──────────────────
+main.py
+debug_responses/
+nginx_logs/

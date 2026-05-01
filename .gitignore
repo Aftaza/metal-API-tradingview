@@ -218,3 +218,6 @@ __marimo__/
 # logs
 logs/
 nginx_logs/
+
+# agent
+.agent/*

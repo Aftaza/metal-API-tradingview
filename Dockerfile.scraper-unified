@@ -1,19 +1,35 @@
 # ──────────────────────────────────────────────────────────────
-# Dockerfile.scraper-unified — Single Chromium for ALL targets
-# Optimized for low-memory VPS (1 core / 1GB RAM)
+# Dockerfile.scraper-unified — v3 All targets in ONE container
+# Uses asyncio.gather for concurrent HTTP fetches (no browser)
+# Ideal for VPS with limited RAM (fits in 200MB total)
 # ──────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/playwright/python:v1.49.1-noble
+FROM python:3.12-slim
+
+RUN groupadd -r scraper && useradd -r -g scraper scraper
 
 WORKDIR /app
 
-# Python deps
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-  pip install --no-cache-dir \
-  "redis[hiredis]==5.2.1" \
-  playwright==1.49.1
+    pip install --no-cache-dir \
+        "httpx[http2]==0.28.1" \
+        "beautifulsoup4==4.13.4" \
+        "lxml==5.3.2" \
+        "redis[hiredis]==5.2.1"
 
-# Application code
+# Unified scraper handles all 4 targets concurrently
 COPY config.py scraper_unified.py ./
+
+RUN chown -R scraper:scraper /app
+USER scraper
+
+ENV PYTHONUNBUFFERED=1
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD python -c "import redis, os; r=redis.from_url(os.getenv('REDIS_URL','redis://redis:6379/0')); r.ping()" || exit 1
 
 CMD ["python", "-u", "scraper_unified.py"]

@@ -1,302 +1,264 @@
 """
-Scraper Unified — All Targets in One Browser (Low-Memory Edition)
-================================================================
-Runs ALL scraping targets (gold, silver, copper, usdidr) in a SINGLE
-Chromium instance, scraping them SEQUENTIALLY. This is designed for
-low-resource VPS environments (1 core / 1GB RAM).
+Metal Price Scraper Unified v3 — httpx + BeautifulSoup SSR Extraction
+======================================================================
+Runs ALL targets (gold, silver, copper, usdidr) in a SINGLE asyncio
+event loop using concurrent httpx requests — no browser required.
 
-Key design decisions for low-memory operation:
-  • ONE Chromium instance shared across all targets
-  • SEQUENTIAL scraping — only one page open at a time
-  • Page is CLOSED after each target, not reused
-  • Periodic full browser restart to prevent memory creep
-  • Longer intervals between scrapes to reduce CPU pressure
+Designed for low-resource VPS environments.
 
 Architecture:
+  • Single asyncio.gather() for all concurrent HTTP fetches
+  • Shared httpx.AsyncClient (HTTP/2, connection pooling)
+  • Random jitter ± SCRAPE_JITTER_FACTOR around SCRAPE_INTERVAL_SECONDS
+  • Per-target failure counters + exponential back-off skip logic
+  • LKG (Last-Known-Good) strategy: never deletes existing Redis data
+
+Usage:
     python scraper_unified.py
-    → Loops through [gold, silver, copper, usdidr] one by one
-    → Opens page → scrapes → closes page → next target
-    → After all targets done, sleeps for SCRAPE_INTERVAL_SECONDS
 """
+
+from __future__ import annotations
 
 import asyncio
 import json
 import logging
+import random
+import re
 import sys
 import time
 from datetime import datetime, timezone
+from typing import Any
 
+import httpx
 import redis.asyncio as aioredis
-from playwright.async_api import async_playwright, Playwright, Browser, BrowserContext, Page
+from bs4 import BeautifulSoup
 
 from config import (
+    HTTP_TIMEOUT_SECONDS,
+    MAX_CONSECUTIVE_FAILURES,
+    RECOVERY_DELAY_SECONDS,
     REDIS_URL,
     SCRAPE_INTERVAL_SECONDS,
-    SCRAPE_TIMEOUT_MS,
-    RECOVERY_DELAY_SECONDS,
+    SCRAPE_JITTER_FACTOR,
     SCRAPE_TARGETS,
 )
 
 logger = logging.getLogger("scraper_unified")
 
-# ── Chromium launch args (aggressive memory savings) ─────────────────
-CHROMIUM_ARGS = [
-    "--no-sandbox",
-    "--disable-dev-shm-usage",
-    "--disable-gpu",
-    "--disable-extensions",
-    "--disable-background-networking",
-    "--disable-default-apps",
-    "--disable-sync",
-    "--metrics-recording-only",
-    "--no-first-run",
-    "--disable-software-rasterizer",
-    "--disable-accelerated-2d-canvas",
-    "--disable-features=TranslateUI",
-    # Extra memory-saving flags for low-RAM VPS
-    "--js-flags=--max-old-space-size=128",
-    "--disable-features=AudioServiceOutOfProcess",
-    "--disable-features=IsolateOrigins",
-    "--disable-site-isolation-trials",
-    "--renderer-process-limit=2",
-    "--disable-background-timer-throttling",
-    "--disable-backgrounding-occluded-windows",
+# ---------------------------------------------------------------------------
+# HTTP headers / user-agent pool (same as scraper_daemon)
+# ---------------------------------------------------------------------------
+
+_USER_AGENTS: list[str] = [
+    (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/131.0.0.0 Safari/537.36"
+    ),
+    (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/130.0.0.0 Safari/537.36"
+    ),
+    (
+        "Mozilla/5.0 (X11; Linux x86_64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/129.0.0.0 Safari/537.36"
+    ),
 ]
 
+_BASE_HEADERS: dict[str, str] = {
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,*/*;q=0.8"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "DNT": "1",
+    "Upgrade-Insecure-Requests": "1",
+    "Cache-Control": "max-age=0",
+}
 
-# ──────────────────────────────────────────────────────────────────────
-# Price extraction helpers (same as scraper_daemon.py)
-# ──────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Jitter
+# ---------------------------------------------------------------------------
 
-def _parse_price(raw_text: str, target: dict) -> float | None:
-    """Parse raw text into a validated float price."""
+
+def _jittered_interval() -> float:
+    base = SCRAPE_INTERVAL_SECONDS
+    delta = base * SCRAPE_JITTER_FACTOR
+    return base + random.uniform(-delta, delta)
+
+
+# ---------------------------------------------------------------------------
+# Extraction logic (shared with scraper_daemon)
+# ---------------------------------------------------------------------------
+
+def _extract_kitco_price(html: str, target: dict) -> float | None:
+    """Extract price from Kitco's Next.js __NEXT_DATA__ SSR block."""
+    symbol = target["kitco_symbol"]
+
+    soup = BeautifulSoup(html, "lxml")
+    tag = soup.find("script", {"id": "__NEXT_DATA__"})
+    if tag is None:
+        logger.warning(f"[{target['name']}] __NEXT_DATA__ tag not found")
+        return None
+
     try:
-        cleaned = raw_text.replace(",", "").replace("$", "").strip()
-        if not cleaned:
-            return None
-
-        if (
-            target["source"] == "tradingview"
-            and target["type"] == "metal"
-            and "." not in cleaned
-            and len(cleaned) > 3
-        ):
-            cleaned = cleaned[:-2] + "." + cleaned[-2:]
-
-        value = float(cleaned)
-
-        if target["type"] == "currency":
-            if 10_000 < value < 25_000:
-                return value
-            logger.warning(f"[{target['name']}] Value {value} outside USDIDR range")
-        else:
-            if 0.001 < value < 100_000:
-                return value
-            logger.warning(f"[{target['name']}] Value {value} outside metal range")
-
-        return None
-    except (ValueError, TypeError) as exc:
-        logger.error(f"[{target['name']}] Parse error: {exc}")
+        data: dict[str, Any] = json.loads(tag.string)
+    except (json.JSONDecodeError, TypeError) as exc:
+        logger.error(f"[{target['name']}] JSON parse error: {exc}")
         return None
 
-
-# ──────────────────────────────────────────────────────────────────────
-# Fallback selectors (same as scraper_daemon.py)
-# ──────────────────────────────────────────────────────────────────────
-
-KITCO_FALLBACK_SELECTORS = [
-    "xpath=//h2[contains(text(),'Live')][contains(text(),'Price')]/following-sibling::h3[1]",
-    "h3.tracking-\\[1px\\]",
-    "h3.font-bold.text-4xl",
-    "h3.font-mulish",
-    "h3.font-bold.leading-normal",
-]
-
-_KITCO_JS_EXTRACT = """
-() => {
-    const h2s = document.querySelectorAll('h2');
-    for (const h2 of h2s) {
-        if (h2.innerText.includes('Live') && h2.innerText.includes('Price')) {
-            let sibling = h2.nextElementSibling;
-            while (sibling) {
-                if (sibling.tagName === 'H3') {
-                    const t = sibling.innerText.trim();
-                    if (t && /\\d/.test(t)) return t;
-                }
-                sibling = sibling.nextElementSibling;
-            }
-        }
-    }
-    const h3s = document.querySelectorAll('h3');
-    for (const h3 of h3s) {
-        const t = h3.innerText.trim();
-        if (t && /^[\\d,.]+$/.test(t) && t.length < 15) return t;
-    }
-    return null;
-}
-"""
-
-TRADINGVIEW_FALLBACK_SELECTORS = [
-    "span.last-zoF9r75I",
-    "span[data-qa-id='symbol-last-value']",
-    "span[class*='last-']",
-]
-
-_TV_JS_EXTRACT = """
-() => {
-    const spans = document.querySelectorAll('span[class*="last-"]');
-    for (const s of spans) {
-        const t = s.innerText.trim();
-        if (t && /\\d/.test(t) && t.length < 20) return t;
-    }
-    const qa = document.querySelector('span[data-qa-id="symbol-last-value"]');
-    if (qa) return qa.innerText.trim();
-    return null;
-}
-"""
-
-
-async def _try_extract_price(page: Page, target: dict) -> str | None:
-    """Try multiple selectors to extract price text from the page."""
-    source = target["source"]
-    selectors = (
-        KITCO_FALLBACK_SELECTORS if source == "kitco"
-        else TRADINGVIEW_FALLBACK_SELECTORS
+    queries: list[dict] = (
+        data.get("props", {})
+        .get("pageProps", {})
+        .get("dehydratedState", {})
+        .get("queries", [])
     )
 
-    for i, selector in enumerate(selectors):
-        try:
-            timeout = 15000 if i == 0 else 5000
-            locator = page.locator(selector).first
-            await locator.wait_for(state="visible", timeout=timeout)
-            text = await locator.inner_text(timeout=5000)
-            text = text.strip()
-            if text and any(c.isdigit() for c in text):
-                return text
-        except Exception:
+    for query in queries:
+        key_list: list = query.get("queryKey", [])
+        if not key_list or key_list[0] != "metalQuote":
             continue
 
-    js_extract = None
-    if source == "tradingview":
-        js_extract = _TV_JS_EXTRACT
-    elif source == "kitco":
-        js_extract = _KITCO_JS_EXTRACT
+        params = key_list[1] if len(key_list) > 1 else {}
+        if isinstance(params, dict) and params.get("symbol", symbol) != symbol:
+            continue
 
-    if js_extract:
-        try:
-            result = await page.evaluate(js_extract)
-            if result and any(c.isdigit() for c in result):
-                logger.info(f"[{target['name']}] Price found via JS fallback: {result}")
-                return result
-        except Exception:
-            pass
+        results: list[dict] = (
+            query.get("state", {})
+            .get("data", {})
+            .get("GetMetalQuoteV3", {})
+            .get("results", [])
+        )
+        if not results:
+            return None
 
+        row = results[0]
+        for field in ("mid", "bid", "ask"):
+            raw = row.get(field)
+            if raw is not None:
+                try:
+                    return float(raw)
+                except (ValueError, TypeError):
+                    continue
+
+    logger.warning(f"[{target['name']}] metalQuote/{symbol} not found in queries")
     return None
 
 
-# ──────────────────────────────────────────────────────────────────────
-# Scrape a single target (open page → extract → close page)
-# ──────────────────────────────────────────────────────────────────────
+_TV_TRADE_PRICE_RE: re.Pattern[str] = re.compile(
+    r'"trade"\s*:\s*\{"price"\s*:\s*([\d.]+)',
+    re.IGNORECASE,
+)
+_TV_DAILY_BAR_RE: re.Pattern[str] = re.compile(
+    r'"daily_bar"\s*:\s*\{[^}]*"close"\s*:\s*"([\d.]+)"',
+    re.IGNORECASE,
+)
 
-async def _scrape_one_target(
-    browser: Browser,
+
+def _extract_tradingview_price(html: str, target: dict) -> float | None:
+    """Extract price from TradingView's SSR-injected JSON state."""
+    m = _TV_TRADE_PRICE_RE.search(html)
+    if m:
+        try:
+            return float(m.group(1))
+        except ValueError:
+            pass
+
+    m2 = _TV_DAILY_BAR_RE.search(html)
+    if m2:
+        try:
+            val = float(m2.group(1))
+            logger.debug(f"[{target['name']}] Used daily_bar fallback: {val}")
+            return val
+        except ValueError:
+            pass
+
+    logger.warning(f"[{target['name']}] Could not extract TradingView price")
+    return None
+
+
+def _validate_price(value: float, target: dict) -> bool:
+    lo, hi = target["price_range"]
+    if lo < value < hi:
+        return True
+    logger.warning(
+        f"[{target['name']}] Price {value} outside range ({lo}, {hi})"
+    )
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Per-target scrape (one HTTP request)
+# ---------------------------------------------------------------------------
+
+async def _scrape_target(
+    client: httpx.AsyncClient,
     redis_pool: aioredis.Redis,
     target: dict,
+    ua_index: int,
 ) -> bool:
-    """
-    Scrape a single target in an isolated context.
-    Opens a new context+page, scrapes, then closes everything.
-    Returns True on success, False on failure.
-    """
-    worker_name = target["name"]
-    context = None
-    page = None
+    """Fetch and parse a single target. Returns True on success."""
+    url = target["url"]
+    headers = {
+        **_BASE_HEADERS,
+        "User-Agent": _USER_AGENTS[ua_index % len(_USER_AGENTS)],
+    }
 
     try:
-        context = await browser.new_context(
-            viewport={"width": 1280, "height": 720},
-            user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/131.0.0.0 Safari/537.36"
-            ),
-            java_script_enabled=True,
-            bypass_csp=True,
+        resp = await client.get(url, headers=headers, timeout=HTTP_TIMEOUT_SECONDS)
+        resp.raise_for_status()
+        html = resp.text
+    except httpx.TimeoutException:
+        logger.warning(f"[{target['name']}] Timeout after {HTTP_TIMEOUT_SECONDS}s")
+        return False
+    except httpx.HTTPStatusError as exc:
+        logger.warning(
+            f"[{target['name']}] HTTP {exc.response.status_code} from {url}"
         )
-        context.set_default_timeout(SCRAPE_TIMEOUT_MS)
+        return False
+    except httpx.RequestError as exc:
+        logger.warning(f"[{target['name']}] Request error: {exc}")
+        return False
 
-        page = await context.new_page()
+    # Parse
+    if target["source"] == "kitco":
+        price = _extract_kitco_price(html, target)
+    else:
+        price = _extract_tradingview_price(html, target)
 
-        # Block heavy resources to save memory & bandwidth
-        await page.route(
-            "**/*.{png,jpg,jpeg,gif,svg,woff,woff2,mp4,webm,webp,ico}",
-            lambda route: route.abort(),
-        )
+    if price is None or not _validate_price(price, target):
+        return False
 
-        # Navigate
-        logger.info(f"[{worker_name}] Navigating to {target['url']}")
-        await page.goto(
-            target["url"],
-            wait_until="domcontentloaded",
-            timeout=SCRAPE_TIMEOUT_MS + 15000,
-        )
-
-        # Wait for JS rendering
-        js_wait = 8000 if target["source"] == "tradingview" else 3000
-        await page.wait_for_timeout(js_wait)
-
-        # Extract price
-        raw_text = await _try_extract_price(page, target)
-        if raw_text is None:
-            logger.warning(f"[{worker_name}] No price element found")
-            return False
-
-        price = _parse_price(raw_text, target)
-        if price is None:
-            logger.warning(
-                f"[{worker_name}] Extracted '{raw_text}' "
-                f"could not be parsed into a valid price"
-            )
-            return False
-
-        # Write to Redis
-        payload = json.dumps({
+    payload = json.dumps(
+        {
             "price": price,
             "source": "Kitco" if target["source"] == "kitco" else "TradingView",
             "unit": target["unit"],
             "updated_at": datetime.now(timezone.utc).isoformat(),
-        })
-        await redis_pool.set(target["redis_key"], payload)
-        logger.info(f"[{worker_name}] ✓ {price:>12,.4f}  →  Redis({target['redis_key']})")
-        return True
-
-    except Exception as exc:
-        logger.error(
-            f"[{worker_name}] Scrape error: "
-            f"{type(exc).__name__}: {exc}"
-        )
-        return False
-
-    finally:
-        # CRITICAL: Always close context+page to free memory
-        if context is not None:
-            try:
-                await context.close()
-            except Exception:
-                pass
+        }
+    )
+    await redis_pool.set(target["redis_key"], payload)
+    logger.info(
+        f"[{target['name']}] ✓ {price:>12,.4f}  →  Redis({target['redis_key']})"
+    )
+    return True
 
 
-# ──────────────────────────────────────────────────────────────────────
-# Main loop — sequential round-robin through all targets
-# ──────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Main loop
+# ---------------------------------------------------------------------------
 
 async def main() -> None:
     logger.info("=" * 65)
-    logger.info("  SCRAPER UNIFIED — Low-Memory Sequential Mode")
-    logger.info(f"  Targets     : {', '.join(t['name'] for t in SCRAPE_TARGETS)}")
-    logger.info(f"  Interval    : {SCRAPE_INTERVAL_SECONDS}s (between full rounds)")
-    logger.info(f"  Timeout     : {SCRAPE_TIMEOUT_MS}ms")
-    logger.info(f"  Redis       : {REDIS_URL}")
+    logger.info("  SCRAPER UNIFIED v3 — httpx + BeautifulSoup SSR Extraction")
+    logger.info(f"  Targets  : {', '.join(t['name'] for t in SCRAPE_TARGETS)}")
+    logger.info(f"  Interval : {SCRAPE_INTERVAL_SECONDS}s ± {SCRAPE_JITTER_FACTOR*100:.0f}%")
+    logger.info(f"  Timeout  : {HTTP_TIMEOUT_SECONDS}s")
+    logger.info(f"  Redis    : {REDIS_URL}")
     logger.info("=" * 65)
 
     # Wait for Redis
@@ -304,9 +266,7 @@ async def main() -> None:
     while redis_pool is None:
         try:
             redis_pool = aioredis.from_url(
-                REDIS_URL,
-                decode_responses=True,
-                socket_connect_timeout=5,
+                REDIS_URL, decode_responses=True, socket_connect_timeout=5
             )
             await redis_pool.ping()
             logger.info("✓ Connected to Redis")
@@ -315,76 +275,80 @@ async def main() -> None:
             redis_pool = None
             await asyncio.sleep(2)
 
-    # Browser lifecycle
-    BROWSER_RESTART_ROUNDS = 10  # Restart browser every N full rounds
+    # Per-target consecutive failure counter
+    failure_counts: dict[str, int] = {t["key"]: 0 for t in SCRAPE_TARGETS}
+    ua_index = 0
     round_count = 0
 
-    pw = None
-    browser = None
-
     try:
-        while True:
-            # Launch or restart browser
-            if browser is None or not browser.is_connected() or round_count % BROWSER_RESTART_ROUNDS == 0:
-                if round_count > 0:
-                    logger.info(
-                        f"🔄 Restarting browser (round {round_count}, "
-                        f"periodic cleanup)"
-                    )
+        async with httpx.AsyncClient(
+            http2=True,
+            follow_redirects=True,
+            limits=httpx.Limits(max_keepalive_connections=4, max_connections=8),
+        ) as client:
+            while True:
+                round_count += 1
+                round_start = time.monotonic()
 
-                # Shutdown old browser + Playwright
-                if browser is not None:
-                    try:
-                        await browser.close()
-                    except Exception:
-                        pass
-                if pw is not None:
-                    try:
-                        await pw.stop()
-                    except Exception:
-                        pass
+                # Determine which targets should run this round
+                # (targets with too many failures get skipped for back-off)
+                active_targets = []
+                skipped = []
+                for t in SCRAPE_TARGETS:
+                    fails = failure_counts[t["key"]]
+                    if fails > 0 and fails % MAX_CONSECUTIVE_FAILURES == 0:
+                        # Skip this round — still in back-off
+                        skipped.append(t["key"])
+                    else:
+                        active_targets.append(t)
 
-                pw = await async_playwright().start()
-                browser = await pw.chromium.launch(
-                    headless=True,
-                    args=CHROMIUM_ARGS,
+                if skipped:
+                    logger.info(f"── Skipping (back-off): {skipped}")
+
+                # Fetch all active targets CONCURRENTLY
+                tasks = [
+                    _scrape_target(client, redis_pool, t, ua_index)
+                    for t in active_targets
+                ]
+                results: list[bool] = await asyncio.gather(*tasks, return_exceptions=False)
+
+                # Update failure counters
+                ok_count = 0
+                for target, success in zip(active_targets, results):
+                    key = target["key"]
+                    if success:
+                        failure_counts[key] = 0
+                        ok_count += 1
+                    else:
+                        failure_counts[key] += 1
+                        count = failure_counts[key]
+                        backoff = min(
+                            RECOVERY_DELAY_SECONDS * (2 ** (count - 1)), 120
+                        )
+                        log_fn = (
+                            logger.error if count >= MAX_CONSECUTIVE_FAILURES
+                            else logger.warning
+                        )
+                        log_fn(
+                            f"[{target['name']}] Failure #{count} — "
+                            f"back-off active next {backoff:.0f}s"
+                        )
+
+                ua_index += 1  # Rotate UA each round
+                round_duration = time.monotonic() - round_start
+                sleep_secs = max(0.0, _jittered_interval() - round_duration)
+
+                logger.info(
+                    f"── Round {round_count}: {ok_count}/{len(active_targets)} OK "
+                    f"in {round_duration:.2f}s | next in {sleep_secs:.1f}s ──"
                 )
-                logger.info("✓ Chromium launched (single instance for all targets)")
-
-            # Scrape each target sequentially
-            success_count = 0
-            for target in SCRAPE_TARGETS:
-                ok = await _scrape_one_target(browser, redis_pool, target)
-                if ok:
-                    success_count += 1
-
-                # Small delay between targets to let memory settle
-                await asyncio.sleep(2)
-
-            round_count += 1
-            logger.info(
-                f"── Round {round_count} complete: "
-                f"{success_count}/{len(SCRAPE_TARGETS)} targets OK ──"
-            )
-
-            # Sleep before next round
-            await asyncio.sleep(SCRAPE_INTERVAL_SECONDS)
+                await asyncio.sleep(sleep_secs)
 
     except asyncio.CancelledError:
         logger.info("Daemon received cancellation signal")
     except KeyboardInterrupt:
         logger.info("Interrupted by user")
     finally:
-        if browser is not None:
-            try:
-                await browser.close()
-            except Exception:
-                pass
-        if pw is not None:
-            try:
-                await pw.stop()
-            except Exception:
-                pass
         if redis_pool is not None:
             await redis_pool.aclose()
         logger.info("✓ Unified daemon shut down cleanly")

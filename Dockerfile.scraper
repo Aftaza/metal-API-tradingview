@@ -1,21 +1,40 @@
 # ──────────────────────────────────────────────────────────────
-# Dockerfile.scraper — Playwright + Chromium scraper daemon
+# Dockerfile.scraper — v3 httpx + BeautifulSoup scraper daemon
+# Single target per container (set SCRAPE_TARGET env var)
+# Base image: python:3.12-slim  — ~50MB, no browser required
 # ──────────────────────────────────────────────────────────────
-# Use Microsoft's official Playwright image which comes with
-# Chromium + all OS dependencies pre-installed. This avoids the
-# ttf-unifont / ttf-ubuntu-font-family package errors on Debian Trixie.
-FROM mcr.microsoft.com/playwright/python:v1.49.1-noble
+FROM python:3.12-slim
+
+# Non-root user for security
+RUN groupadd -r scraper && useradd -r -g scraper scraper
 
 WORKDIR /app
 
-# Python deps
+# System deps: curl for healthcheck only
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Python deps — install from requirements.txt (no browser packages)
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-  pip install --no-cache-dir \
-  "redis[hiredis]==5.2.1" \
-  playwright==1.49.1
+    pip install --no-cache-dir \
+        "httpx[http2]==0.28.1" \
+        "beautifulsoup4==4.13.4" \
+        "lxml==5.3.2" \
+        "redis[hiredis]==5.2.1"
 
 # Application code
 COPY config.py scraper_daemon.py ./
+
+# Permissions
+RUN chown -R scraper:scraper /app
+USER scraper
+
+# SCRAPE_TARGET must be set by docker-compose (gold|silver|copper|usdidr)
+ENV PYTHONUNBUFFERED=1
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD python -c "import redis, os; r=redis.from_url(os.getenv('REDIS_URL','redis://redis:6379/0')); r.ping()" || exit 1
 
 CMD ["python", "-u", "scraper_daemon.py"]

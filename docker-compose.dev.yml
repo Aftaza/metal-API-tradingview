@@ -1,32 +1,72 @@
-version: '3.8'
+# ──────────────────────────────────────────────────────────────
+#  docker-compose.dev.yml — Local development with hot-reload
+#  v3: No browser required. Run Redis locally or via Docker.
+#
+#  Usage:
+#    docker compose -f docker-compose.dev.yml up
+# ──────────────────────────────────────────────────────────────
 
 services:
-  metal-api-dev:
-    build: .
-    container_name: metal-price-api-dev
+  redis:
+    image: redis:7-alpine
+    container_name: metal-redis-dev
+    command: redis-server --appendonly no --save "" --maxmemory 32mb
+    expose:
+      - "6379"
+    networks:
+      - metal-network-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: metal-api-dev
     ports:
       - "8000:8000"
     environment:
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=DEBUG
+      - DATA_STALENESS_SECONDS=300
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Hot-reload: mount source files directly
+      - ./config.py:/app/config.py:ro
+      - ./api.py:/app/api.py:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - metal-network-dev
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+
+  # Run a single scraper in dev mode (gold only for quick testing)
+  scraper-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    container_name: metal-scraper-dev
+    environment:
+      - SCRAPE_TARGET=gold
+      - REDIS_URL=redis://redis:6379/0
+      - SCRAPE_INTERVAL_SECONDS=60
+      - SCRAPE_JITTER_FACTOR=0.1
+      - HTTP_TIMEOUT_SECONDS=20
       - LOG_LEVEL=DEBUG
       - PYTHONUNBUFFERED=1
-      - UPDATE_INTERVAL=300
-      - SCRAP_TIMEOUT=20
     volumes:
-      - .:/app
-      - ./logs:/app/logs
-      - ./debug_responses:/app/debug_responses
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+      - ./config.py:/app/config.py:ro
+      - ./scraper_daemon.py:/app/scraper_daemon.py:ro
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
-      - metal-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    security_opt:
-      - no-new-privileges:true
+      - metal-network-dev
 
 networks:
-  metal-network:
+  metal-network-dev:
     driver: bridge

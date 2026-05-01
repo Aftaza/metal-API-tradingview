@@ -1,14 +1,22 @@
 # ──────────────────────────────────────────────────────────────
-#  docker-compose.yml — V2-Kitco Architecture
+#  docker-compose.yml — Metal Price API v3
+#  Architecture: httpx + BeautifulSoup SSR (no headless browser)
 #
 #  Services:
-#    nginx           →  Reverse proxy (public port 80)
-#    redis           →  In-memory data store (no persistence)
-#    api             →  FastAPI REST endpoint (reads from Redis)
-#    scraper-gold    →  Kitco Gold worker
-#    scraper-silver  →  Kitco Silver worker
-#    scraper-copper  →  Kitco Copper worker
-#    scraper-usdidr  →  TradingView USDIDR worker
+#    nginx            →  Reverse proxy (public port 80)
+#    redis            →  In-memory price store
+#    api              →  FastAPI REST endpoint (reads Redis)
+#    scraper-gold     →  httpx daemon → Kitco Gold
+#    scraper-silver   →  httpx daemon → Kitco Silver
+#    scraper-copper   →  httpx daemon → Kitco Copper
+#    scraper-usdidr   →  httpx daemon → TradingView USDIDR
+#
+#  Memory budget (~normal VPS, 2GB RAM):
+#    nginx      : 32MB
+#    redis      : 64MB
+#    api        : 128MB  (2 uvicorn workers)
+#    scraper ×4 : 4×64MB = 256MB  (no browser!)
+#    Total      : ~480MB — well within 1GB
 # ──────────────────────────────────────────────────────────────
 
 services:
@@ -29,9 +37,9 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 64M
+          memory: 32M
 
-  # ── Redis: pure in-memory, no disk persistence ──────────────
+  # ── Redis: pure in-memory, no disk persistence ───────────────
   redis:
     image: redis:7-alpine
     container_name: metal-redis
@@ -44,34 +52,33 @@ services:
         --tcp-backlog 128
         --timeout 0
         --tcp-keepalive 60
-    # No public port — only accessible within metal-network
     expose:
       - "6379"
     networks:
       - metal-network
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 96M
 
-  # ── FastAPI: ultra-fast REST reads from Redis ───────────────
+  # ── FastAPI: reads prices from Redis ────────────────────────
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: metal-api-v2
-    # No public port — proxied through Nginx
+    container_name: metal-api-v3
     expose:
       - "8000"
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DATA_STALENESS_SECONDS=${DATA_STALENESS_SECONDS:-300}
     depends_on:
       redis:
         condition: service_healthy
@@ -82,12 +89,12 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 256M
+          memory: 192M
         reservations:
           cpus: "0.25"
-          memory: 128M
+          memory: 96M
 
-  # ── Scraper: Gold (Kitco) ───────────────────────────────────
+  # ── Scraper: Gold (Kitco → __NEXT_DATA__ JSON) ──────────────
   scraper-gold:
     build:
       context: .
@@ -96,27 +103,28 @@ services:
     environment:
       - SCRAPE_TARGET=gold
       - REDIS_URL=redis://redis:6379/0
-      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-10}
-      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-30}
+      - SCRAPE_JITTER_FACTOR=${SCRAPE_JITTER_FACTOR:-0.3}
+      - HTTP_TIMEOUT_SECONDS=${HTTP_TIMEOUT_SECONDS:-20}
       - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
-      - LOG_LEVEL=INFO
+      - MAX_CONSECUTIVE_FAILURES=${MAX_CONSECUTIVE_FAILURES:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - metal-network
     restart: unless-stopped
-    shm_size: "256mb"
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
+          cpus: "0.5"
+          memory: 96M
         reservations:
-          cpus: "0.25"
-          memory: 256M
+          cpus: "0.1"
+          memory: 48M
 
-  # ── Scraper: Silver (Kitco) ─────────────────────────────────
+  # ── Scraper: Silver (Kitco → __NEXT_DATA__ JSON) ────────────
   scraper-silver:
     build:
       context: .
@@ -125,27 +133,28 @@ services:
     environment:
       - SCRAPE_TARGET=silver
       - REDIS_URL=redis://redis:6379/0
-      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-10}
-      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-30}
+      - SCRAPE_JITTER_FACTOR=${SCRAPE_JITTER_FACTOR:-0.3}
+      - HTTP_TIMEOUT_SECONDS=${HTTP_TIMEOUT_SECONDS:-20}
       - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
-      - LOG_LEVEL=INFO
+      - MAX_CONSECUTIVE_FAILURES=${MAX_CONSECUTIVE_FAILURES:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - metal-network
     restart: unless-stopped
-    shm_size: "256mb"
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
+          cpus: "0.5"
+          memory: 96M
         reservations:
-          cpus: "0.25"
-          memory: 256M
+          cpus: "0.1"
+          memory: 48M
 
-  # ── Scraper: Copper (Kitco) ─────────────────────────────────
+  # ── Scraper: Copper (Kitco → __NEXT_DATA__ JSON) ────────────
   scraper-copper:
     build:
       context: .
@@ -154,27 +163,28 @@ services:
     environment:
       - SCRAPE_TARGET=copper
       - REDIS_URL=redis://redis:6379/0
-      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-10}
-      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-30}
+      - SCRAPE_JITTER_FACTOR=${SCRAPE_JITTER_FACTOR:-0.3}
+      - HTTP_TIMEOUT_SECONDS=${HTTP_TIMEOUT_SECONDS:-20}
       - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
-      - LOG_LEVEL=INFO
+      - MAX_CONSECUTIVE_FAILURES=${MAX_CONSECUTIVE_FAILURES:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - metal-network
     restart: unless-stopped
-    shm_size: "256mb"
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
+          cpus: "0.5"
+          memory: 96M
         reservations:
-          cpus: "0.25"
-          memory: 256M
+          cpus: "0.1"
+          memory: 48M
 
-  # ── Scraper: USDIDR (TradingView) ───────────────────────────
+  # ── Scraper: USDIDR (TradingView → SSR JSON regex) ──────────
   scraper-usdidr:
     build:
       context: .
@@ -183,25 +193,26 @@ services:
     environment:
       - SCRAPE_TARGET=usdidr
       - REDIS_URL=redis://redis:6379/0
-      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-10}
-      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-30}
+      - SCRAPE_JITTER_FACTOR=${SCRAPE_JITTER_FACTOR:-0.3}
+      - HTTP_TIMEOUT_SECONDS=${HTTP_TIMEOUT_SECONDS:-20}
       - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
-      - LOG_LEVEL=INFO
+      - MAX_CONSECUTIVE_FAILURES=${MAX_CONSECUTIVE_FAILURES:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - metal-network
     restart: unless-stopped
-    shm_size: "512mb"
     deploy:
       resources:
         limits:
-          cpus: "1.5"
-          memory: 768M
-        reservations:
           cpus: "0.5"
-          memory: 384M
+          memory: 96M
+        reservations:
+          cpus: "0.1"
+          memory: 48M
 
 networks:
   metal-network:

@@ -1,22 +1,23 @@
 # ──────────────────────────────────────────────────────────────
 #  docker-compose.lowmem.yml — Optimized for VPS 1 Core / 1GB RAM
+#  v3: httpx + BeautifulSoup (no browser) → fits easily in 512MB
 #
 #  Key differences from docker-compose.yml:
-#    • 4 separate scraper containers → 1 unified scraper
-#    • Total memory budget: ~700-800MB (fits in 1GB with swap)
-#    • Single Chromium instance scrapes all targets sequentially
-#    • API runs with 1 uvicorn worker instead of 2
-#    • Redis maxmemory reduced to 32MB
+#    • 4 separate scrapers → 1 unified scraper (asyncio.gather)
+#    • API runs with 1 uvicorn worker
+#    • Redis maxmemory: 32MB
+#
+#  Total memory budget: ~260MB (vs old ~700-800MB with browser)
 #
 #  Services:
-#    nginx           →  Reverse proxy (public port 80)
-#    redis           →  In-memory data store (no persistence)
-#    api             →  FastAPI REST endpoint (reads from Redis)
-#    scraper         →  Unified scraper (all targets, 1 browser)
+#    nginx    →  Reverse proxy (public port 80)
+#    redis    →  In-memory price store (32MB cap)
+#    api      →  FastAPI, 1 worker
+#    scraper  →  Unified: all 4 targets, concurrent httpx
 # ──────────────────────────────────────────────────────────────
 
 services:
-  # ── Nginx: reverse proxy + rate limiting ─────────────────────
+  # ── Nginx ────────────────────────────────────────────────────
   nginx:
     image: nginx:1.25-alpine
     container_name: metal-nginx
@@ -35,7 +36,7 @@ services:
           cpus: "0.25"
           memory: 32M
 
-  # ── Redis: pure in-memory, minimal footprint ─────────────────
+  # ── Redis ────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: metal-redis
@@ -54,7 +55,7 @@ services:
       - metal-network
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 15s
       timeout: 3s
       retries: 5
@@ -63,32 +64,35 @@ services:
         limits:
           memory: 48M
 
-  # ── FastAPI: single worker for low memory ────────────────────
+  # ── FastAPI: 1 worker for low memory ─────────────────────────
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: metal-api-v2
+    container_name: metal-api-v3
     expose:
       - "8000"
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DATA_STALENESS_SECONDS=${DATA_STALENESS_SECONDS:-300}
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - metal-network
     restart: unless-stopped
-    # Override CMD to use 1 worker instead of 2
+    # Override default 2-worker CMD → 1 worker for RAM savings
     command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
     deploy:
       resources:
         limits:
           cpus: "0.5"
-          memory: 128M
+          memory: 96M
 
-  # ── Unified Scraper: ALL targets in ONE browser ──────────────
+  # ── Unified Scraper: ALL 4 targets via asyncio.gather ────────
+  # No browser — pure httpx concurrent requests.
+  # Memory: ~80MB (vs old 512MB Chromium)
   scraper:
     build:
       context: .
@@ -96,25 +100,26 @@ services:
     container_name: metal-scraper-unified
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-15}
-      - SCRAPE_TIMEOUT_MS=${SCRAPE_TIMEOUT_MS:-30000}
+      - SCRAPE_INTERVAL_SECONDS=${SCRAPE_INTERVAL_SECONDS:-30}
+      - SCRAPE_JITTER_FACTOR=${SCRAPE_JITTER_FACTOR:-0.3}
+      - HTTP_TIMEOUT_SECONDS=${HTTP_TIMEOUT_SECONDS:-20}
       - RECOVERY_DELAY_SECONDS=${RECOVERY_DELAY_SECONDS:-5}
-      - LOG_LEVEL=INFO
+      - MAX_CONSECUTIVE_FAILURES=${MAX_CONSECUTIVE_FAILURES:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - metal-network
     restart: unless-stopped
-    shm_size: "256mb"
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
+          cpus: "0.5"
+          memory: 96M
         reservations:
-          cpus: "0.25"
-          memory: 256M
+          cpus: "0.1"
+          memory: 48M
 
 networks:
   metal-network:
